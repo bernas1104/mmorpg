@@ -1,17 +1,32 @@
 ﻿namespace GameServer.Simulation;
 
-public sealed class Map(int width, int height)
+public sealed class Map
 {
-    public int Width { get; init; } = width;
-    public int Height { get; init; } = height;
-    public Tile[,] Tiles { get; } = new Tile[width, height];
+    public int Width { get; init; }
+    public int Height { get; init; }
+    public Tile[,] Tiles { get; }
 
-    public bool IsWalkable(int x, int y) => Tiles[x, y].IsWalkable;
+    public Map(int width, int height)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width, nameof(width));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height, nameof(height));
 
-    public bool IsInBounds(int x, int y) => x >= 0 && y >= 0 && x < Width && y < Height;
+        Width = width;
+        Height = height;
+        Tiles = new Tile[width, height];
+
+        for (var x = 0; x < width; x++)
+            for (var y = 0; y < height; y++)
+                Tiles[x, y] = new Tile(true);
+    }
+
+    public bool IsWalkable(TilePosition position) => Tiles[position.X, position.Y].Walkable;
+
+    public bool IsInBounds(TilePosition position) => position.X >= 0 && position.Y >= 0
+        && position.X < Width && position.Y < Height;
 }
 
-public struct Tile
+public readonly struct Tile(bool walkable)
 {
-    public bool IsWalkable;
+    public readonly bool Walkable { get; } = walkable;
 }
