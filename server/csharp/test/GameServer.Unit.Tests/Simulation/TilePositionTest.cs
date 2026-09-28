@@ -18,8 +18,8 @@ public sealed class TilePositionTest
         var newPosition = initialPosition.Step(direction);
 
         // Assert
-        Assert.Equal(expectedX, newPosition.X);
-        Assert.Equal(expectedY, newPosition.Y);
+        newPosition.X.Should().Be(expectedX);
+        newPosition.Y.Should().Be(expectedY);
     }
 
     [Fact]
@@ -29,6 +29,6 @@ public sealed class TilePositionTest
         var initialPosition = new TilePosition(0, 0);
 
         // Act && Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => initialPosition.Step((Directions)999));
+        Assert.Throws<ArgumentOutOfRangeException>(() => initialPosition.Step((Directions)999));
     }
 }

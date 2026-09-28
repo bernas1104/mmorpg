@@ -28,7 +28,7 @@ public sealed class MapTest
         var result = map.IsWalkable(new TilePosition(0, 0));
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 
     [Theory]
@@ -46,6 +46,6 @@ public sealed class MapTest
         var result = map.IsInBounds(new TilePosition(x, y));
 
         // Assert
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 }
