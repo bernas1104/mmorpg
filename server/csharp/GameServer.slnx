@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GameServer.Cli/GameServer.Cli.csproj" />
+    <Project Path="src/GameServer.Simulation/GameServer.Simulation.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/GameServer.Integration.Tests/GameServer.Integration.Tests.csproj" />
+    <Project Path="test/GameServer.Unit.Tests/GameServer.Unit.Tests.csproj" />
+  </Folder>
+</Solution>
