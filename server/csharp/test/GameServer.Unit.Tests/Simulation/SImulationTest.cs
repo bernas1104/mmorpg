@@ -11,7 +11,7 @@ public sealed class SimulationTest
     {
         // Arrange
         var stopwatch = Stopwatch.StartNew();
-        var simulation = new GameServer.Simulation.Simulation(new World(new Map(512, 512)));
+        var simulation = new GameServer.Simulation.Simulation(new World(Map.CreateEmpty(512, 512)));
 
         // Act
         for (int i = 0; i < 10; i++) simulation.Tick();

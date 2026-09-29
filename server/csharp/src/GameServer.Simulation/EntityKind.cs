@@ -2,7 +2,5 @@ namespace GameServer.Simulation;
 
 public enum EntityKind
 {
-    Player,
-    Monster,
-    NPC
+    Player
 }

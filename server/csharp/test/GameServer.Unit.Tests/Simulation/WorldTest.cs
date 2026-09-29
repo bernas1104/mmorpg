@@ -1,4 +1,5 @@
 using GameServer.Simulation;
+using GameServer.Unit.Tests.Mocks;
 
 namespace GameServer.Unit.Tests.Simulation;
 
@@ -10,7 +11,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenCreatingWorld_InitializesCorrectly()
     {
         // Arrange
-        var map = new Map(512, 512);
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
 
         // Act
         var world = new World(map);
@@ -18,7 +19,6 @@ public sealed class WorldTest
         // Assert
         world.Should().NotBeNull();
         world.Map.Should().Be(map);
-        world.Entities.Should().BeEmpty();
         world.IdCounter.Should().Be(0);
     }
 
@@ -26,15 +26,14 @@ public sealed class WorldTest
     public void GivenWorld_WhenAddingPlayerInValidPosition_ThenPlayerIsAddedCorrectly()
     {
         // Arrange
-        var map = new Map(512, 512);
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
-        var tilePosition = new TilePosition(_faker.Random.Int(0, 511), _faker.Random.Int(0, 511));
+        var tilePosition = new TilePosition(_faker.Random.Int(1, 18), _faker.Random.Int(1, 18));
 
         // Act
         var playerId = world.SpawnPlayer(tilePosition);
 
         // Assert
-        playerId.Should().NotBeNull();
         playerId.Value.Should().Be(0);
 
         var player = world.GetEntity(playerId);
@@ -46,28 +45,29 @@ public sealed class WorldTest
     public void GivenWorld_WhenSpawningMultiplePlayers_ThenEntityIdsIncrementCorrectly()
     {
         // Arrange
-        var map = new Map(512, 512);
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
-        var tilePosition = new TilePosition(_faker.Random.Int(100, 400), _faker.Random.Int(100, 400));
+        var tilePosition = new TilePosition(_faker.Random.Int(10, 15), _faker.Random.Int(10, 15));
 
         // Act && Assert
         for (int i = 0; i < 5; i++)
         {
             var playerId = world.SpawnPlayer(tilePosition);
-            playerId.Should().NotBeNull();
             playerId.Value.Should().Be(i);
         }
     }
 
     [Theory]
     [InlineData(-1, -1)]
-    [InlineData(512, 512)]
-    [InlineData(-1, 512)]
-    [InlineData(512, -1)]
+    [InlineData(0, 0)]
+    [InlineData(19, 19)]
+    [InlineData(20, 20)]
+    [InlineData(-1, 20)]
+    [InlineData(20, -1)]
     public void GivenWorld_WhenAddingPlayerInInvalidPosition_ThenThrowsArgumentOutOfRangeException(int x, int y)
     {
         // Arrange
-        var map = new Map(512, 512);
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
         var invalidTilePosition = new TilePosition(x, y);
 
@@ -79,7 +79,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenGettingNonExistingEntity_ThenReturnsNull()
     {
         // Arrange
-        var map = new Map(512, 512);
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
 
         // Act

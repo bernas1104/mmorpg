@@ -1,3 +1,3 @@
 namespace GameServer.Simulation;
 
-public record EntityId(int Value);
+public readonly record struct EntityId(int Value);
