@@ -10,11 +10,15 @@ public sealed class Map
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width, nameof(width));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height, nameof(height));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(
-            width * height,
-            tiles?.Length ?? int.MaxValue,
-            nameof(tiles.Length)
-        );
+
+        if (tiles is not null && (tiles.GetLength(0) != width || tiles.GetLength(1) != height))
+        {
+            throw new ArgumentException(
+                $"Tile grid shape [{tiles.GetLength(0)}, {tiles.GetLength(1)}] " +
+                $"does not match map dimensions [{width}, {height}].",
+                nameof(tiles)
+            );
+        }
 
         Width = width;
         Height = height;
@@ -31,13 +35,18 @@ public sealed class Map
 
     public static Map FromRows(string[,] rows)
     {
-        int width = rows.GetLength(0);
-        int height = rows.GetLength(1);
+        int width = rows.GetLength(1);
+        int height = rows.GetLength(0);
         Tile[,] tiles = new Tile[width, height];
 
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                tiles[x, y] = rows[x, y] == "." ? new Tile(true) : new Tile(false);
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+                _ = rows[y, x] switch
+                {
+                    "." => tiles[x, y] = new Tile(true),
+                    "#" => tiles[x, y] = new Tile(false),
+                    _ => throw new ArgumentException($"Invalid tile character: {rows[y, x]}")
+                };
 
         return new Map(width, height, tiles);
     }

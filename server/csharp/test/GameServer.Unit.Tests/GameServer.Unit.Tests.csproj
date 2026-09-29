@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GameServer.Simulation\GameServer.Simulation.csproj" />
-    <ProjectReference Include="..\..\src\GameServer.Cli\GameServer.Cli.csproj" />
   </ItemGroup>
 
 </Project>

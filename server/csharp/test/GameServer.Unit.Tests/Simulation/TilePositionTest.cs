@@ -5,11 +5,11 @@ namespace GameServer.Unit.Tests.Simulation;
 public sealed class TilePositionTest
 {
     [Theory]
-    [InlineData(Directions.North, 0, -1)]
-    [InlineData(Directions.South, 0, 1)]
-    [InlineData(Directions.East, 1, 0)]
-    [InlineData(Directions.West, -1, 0)]
-    public void GivenDirection_WhenStepping_ThenTilePositionIsUpdated(Directions direction, int expectedX, int expectedY)
+    [InlineData(Direction.North, 0, -1)]
+    [InlineData(Direction.South, 0, 1)]
+    [InlineData(Direction.East, 1, 0)]
+    [InlineData(Direction.West, -1, 0)]
+    public void GivenDirection_WhenStepping_ThenTilePositionIsUpdated(Direction direction, int expectedX, int expectedY)
     {
         // Arrange
         var initialPosition = new TilePosition(0, 0);
@@ -29,6 +29,6 @@ public sealed class TilePositionTest
         var initialPosition = new TilePosition(0, 0);
 
         // Act && Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => initialPosition.Step((Directions)999));
+        Assert.Throws<ArgumentOutOfRangeException>(() => initialPosition.Step((Direction)999));
     }
 }

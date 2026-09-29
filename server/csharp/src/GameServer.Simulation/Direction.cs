@@ -1,6 +1,6 @@
 namespace GameServer.Simulation;
 
-public enum Directions
+public enum Direction
 {
     North,
     South,

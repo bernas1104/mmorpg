@@ -4,22 +4,31 @@ using System.Runtime.InteropServices;
 using GameServer.Simulation;
 using GameServer.Simulation.Constants;
 
+string[,] mapRows = new string[,]
+{
+    { ".", ".", ".", ".", "." },
+    { ".", "#", "#", "#", "." },
+    { ".", "#", ".", "#", "." },
+    { ".", "#", "#", "#", "." },
+    { ".", ".", ".", ".", "." }
+};
+
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
     ? null
     : PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; cts.Cancel(); });
 
-var simulation = new Simulation(new World(Map.CreateEmpty(20, 20)));
+var simulation = new Simulation(new World(Map.FromRows(mapRows)));
 
 const int maxCatchUpTicks = 5;
-long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TICK_RATE_MS / 1000;
+long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TickDurationMs / 1000;
 
 long previous = Stopwatch.GetTimestamp();
 long accumulator = 0;
 long nextTickDue = previous + tickDurationTicks;
 
-Console.WriteLine($"Simulation started. Tick {simulation.TickCount}");
+Console.WriteLine($"Simulation started. Tick {simulation.TickNumber}");
 
 while (!cts.Token.IsCancellationRequested)
 {
@@ -31,7 +40,7 @@ while (!cts.Token.IsCancellationRequested)
     while (accumulator >= tickDurationTicks && ticksThisFrame < maxCatchUpTicks)
     {
         simulation.Tick();
-        Console.WriteLine($"Tick {simulation.TickCount}");
+        Console.WriteLine($"Tick {simulation.TickNumber}");
 
         accumulator -= tickDurationTicks;
         nextTickDue += tickDurationTicks;
@@ -55,4 +64,4 @@ while (!cts.Token.IsCancellationRequested)
     else Thread.SpinWait(64);
 }
 
-Console.WriteLine($"Simulation stopped. Tick {simulation.TickCount}");
+Console.WriteLine($"Simulation stopped. Tick {simulation.TickNumber}");

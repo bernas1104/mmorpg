@@ -18,7 +18,7 @@ public sealed class SimulationTest
         stopwatch.Stop();
 
         // Assert
-        simulation.TickCount.Should().Be(10);
+        simulation.TickNumber.Should().Be(10);
 
         stopwatch.ElapsedMilliseconds.Should().BeCloseTo(0, 20);
     }
