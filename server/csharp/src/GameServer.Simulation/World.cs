@@ -1,3 +1,5 @@
+using GameServer.Simulation.Enums;
+
 namespace GameServer.Simulation;
 
 public sealed class World(Map map)
@@ -18,6 +20,22 @@ public sealed class World(Map map)
         var player = new Entity(id, EntityKind.Player, position);
 
         _entities[id] = player;
+
+        return id;
+    }
+
+    public EntityId SpawnNPC(TilePosition position)
+    {
+        if (!Map.IsWalkable(position))
+            throw new ArgumentOutOfRangeException(
+                nameof(position),
+                $"Position {position} is out of bounds or not walkable."
+            );
+
+        var id = new EntityId(IdCounter++);
+        var npc = new Entity(id, EntityKind.NPC, position);
+
+        _entities[id] = npc;
 
         return id;
     }

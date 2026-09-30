@@ -1,3 +1,5 @@
+using GameServer.Simulation.Enums;
+
 namespace GameServer.Simulation;
 
 public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePosition)
