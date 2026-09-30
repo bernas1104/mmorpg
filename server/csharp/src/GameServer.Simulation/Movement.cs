@@ -1,0 +1,33 @@
+using GameServer.Simulation.Enums;
+
+namespace GameServer.Simulation;
+
+public static class Movement
+{
+    public const int MoveCooldownTicks = 10;
+
+    public static MoveResult TryMove(
+        World world,
+        EntityId entityId,
+        Direction direction,
+        long currentTick
+    )
+    {
+        var entity = world.GetEntity(entityId);
+        if (entity is null)
+            return MoveResult.InvalidEntity;
+
+        var targetPosition = entity.TilePosition.Step(direction);
+
+        if (!world.Map.IsWalkable(targetPosition))
+            return MoveResult.InvalidTarget;
+
+        if (currentTick < entity.NextMoveAllowedTick)
+            return MoveResult.InvalidExhaustion;
+
+        entity.MoveTo(targetPosition);
+        entity.UpdateNextMoveAllowedTick(currentTick + MoveCooldownTicks);
+
+        return MoveResult.Success;
+    }
+}

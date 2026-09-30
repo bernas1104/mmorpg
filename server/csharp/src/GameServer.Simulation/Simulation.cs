@@ -13,7 +13,30 @@ public sealed class Simulation(World world)
         var batch = _pending;
         _pending = [];
 
-        foreach (var command in batch) Console.WriteLine($"tick {TickNumber}: received {command}");
+        foreach (var command in batch)
+        {
+            Console.WriteLine($"tick {TickNumber}: received {command}");
+
+            switch (command)
+            {
+                case MoveCommand moveCommand:
+                    var result = Movement.TryMove(
+                        World,
+                        moveCommand.EntityId,
+                        moveCommand.Direction,
+                        TickNumber
+                    );
+
+                    if (result == Enums.MoveResult.Success)
+                        Console.WriteLine($"tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
+                    else
+                        Console.WriteLine($"tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unhandled command type: {command.GetType()}");
+            }
+        }
 
         TickNumber++;
     }

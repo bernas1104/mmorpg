@@ -21,6 +21,7 @@ using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
     : PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; cts.Cancel(); });
 
 var simulation = new Simulation(new World(Map.FromRows(mapRows)));
+simulation.World.SpawnPlayer(new TilePosition(4, 4));
 
 const int maxCatchUpTicks = 5;
 long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TickDurationMs / 1000;
@@ -46,7 +47,8 @@ void CommandParser(string? input)
 
             var parsedId = int.TryParse(parts[1], out var id);
 
-            var parsedDirection = Enum.TryParse<Direction>(parts[2], true, out var direction);
+            var parsedDirection = Enum.TryParse<Direction>(parts[2], true, out var direction)
+                && Enum.IsDefined(direction);
 
             if (!parsedId || !parsedDirection)
             {
