@@ -63,21 +63,26 @@ public sealed class SimulationTest
         secondTick.Should().NotContain("North");
     }
 
-    private static readonly string[] SourceArray = ["Value = 2", "Value = 0", "Value = 1"];
-
     [Fact]
     public void GivenMultipleQueuedCommands_WhenTickRuns_ThenTheyAreProcessedInEnqueueOrder()
     {
+        // Arrange
         var simulation = CreateSimulation();
-        simulation.Enqueue(new MoveCommand(new EntityId(2), Direction.North));
-        simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
-        simulation.Enqueue(new MoveCommand(new EntityId(1), Direction.North));
+        var commands = new MoveCommand[]
+        {
+            new(new EntityId(2), Direction.North),
+            new(new EntityId(0), Direction.North),
+            new(new EntityId(1), Direction.North),
+        };
+
+        foreach (var command in commands) simulation.Enqueue(command);
 
         // Act
         var tick = CaptureTick(simulation.Tick);
 
         // Assert
-        var positions = SourceArray.Select(token => tick.IndexOf(token, StringComparison.Ordinal))
+        var positions = commands
+            .Select(command => tick.IndexOf(command.ToString(), StringComparison.Ordinal))
             .ToArray();
 
         foreach (var position in positions) position.Should().BeGreaterThanOrEqualTo(0);
