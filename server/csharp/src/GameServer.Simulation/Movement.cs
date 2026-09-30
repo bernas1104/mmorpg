@@ -22,6 +22,9 @@ public static class Movement
         if (!world.Map.IsWalkable(targetPosition))
             return MoveResult.InvalidTarget;
 
+        if (world.HasEntityOnTile(targetPosition))
+            return MoveResult.TileOccupied;
+
         if (currentTick < entity.NextMoveAllowedTick)
             return MoveResult.InvalidExhaustion;
 

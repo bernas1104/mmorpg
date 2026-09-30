@@ -22,8 +22,10 @@ public sealed class World(Map map)
         return id;
     }
 
-    public Entity? GetEntity(EntityId id)
-    {
-        return _entities.TryGetValue(id, out var entity) ? entity : null;
-    }
+    public Entity? GetEntity(EntityId id) => _entities.TryGetValue(id, out var entity)
+        ? entity
+        : null;
+
+    public bool HasEntityOnTile(TilePosition tilePosition)
+        => _entities.Values.Any(entity => entity.TilePosition == tilePosition);
 }

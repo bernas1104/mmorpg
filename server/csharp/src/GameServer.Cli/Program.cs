@@ -22,6 +22,7 @@ using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
 
 var simulation = new Simulation(new World(Map.FromRows(mapRows)));
 simulation.World.SpawnPlayer(new TilePosition(4, 4));
+simulation.World.SpawnPlayer(new TilePosition(2, 4));
 
 const int maxCatchUpTicks = 5;
 long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TickDurationMs / 1000;
