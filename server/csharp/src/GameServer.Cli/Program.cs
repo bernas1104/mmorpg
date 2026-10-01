@@ -111,6 +111,7 @@ using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
 
 var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed);
 simulation.World.SpawnPlayer(new TilePosition(4, 4));
+simulation.World.SpawnPlayer(new TilePosition(5, 5));
 simulation.World.SpawnPlayer(new TilePosition(2, 4));
 simulation.World.SpawnNPC(new TilePosition(9, 9));
 simulation.World.SpawnNPC(new TilePosition(10, 10));
@@ -149,6 +150,24 @@ void CommandParser(string? input)
             }
 
             simulation.Enqueue(new MoveCommand(new EntityId(id), direction));
+            return;
+        case "attack":
+            if (parts.Length != 3)
+            {
+                Console.WriteLine("Invalid attack command. Usage: attack <attackerId> <targetId>");
+                return;
+            }
+
+            var parsedAttackerId = int.TryParse(parts[1], out var attackerId);
+            var parsedTargetId = int.TryParse(parts[2], out var targetId);
+
+            if (!parsedAttackerId || !parsedTargetId)
+            {
+                Console.WriteLine("Invalid attack command. Usage: attack <attackerId> <targetId>");
+                return;
+            }
+
+            simulation.Enqueue(new AttackCommand(new EntityId(attackerId), new EntityId(targetId)));
             return;
         default:
             Console.WriteLine("Unknown command");

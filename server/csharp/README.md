@@ -53,7 +53,7 @@ when omitted, the CLI mints one from fresh entropy and **prints the value it use
 
 ## Status — Phase 1 milestones
 
-Roadmap: [`.plans/phase-1-plan.md`](.plans/phase-1-plan.md). Milestones 0–7 are complete.
+Roadmap: [`.plans/phase-1-plan.md`](.plans/phase-1-plan.md). Milestones 0–8 are complete.
 
 | #   | Milestone                                                            | Status |
 | --- | -------------------------------------------------------------------- | ------ |
@@ -65,7 +65,7 @@ Roadmap: [`.plans/phase-1-plan.md`](.plans/phase-1-plan.md). Milestones 0–7 ar
 | 5   | Movement with validation, cooldown, and applied/rejected outcomes    | ✅     |
 | 6   | Multi-entity collision with deterministic conflict resolution        | ✅     |
 | 7   | NPCs as command sources: wander AI, hand-rolled xorshift `Rng`       | ✅     |
-| 8   | Health, damage, combat range, attack cooldown                        | ⬜     |
+| 8   | Health, damage, combat range, attack cooldown                        | ✅     |
 | 9   | Entity lifecycle: death, removal, respawn                            | ⬜     |
 | 10  | Determinism pass & replay harness                                    | ⬜     |
 | 11  | World state snapshot (the networking seam)                           | ⬜     |
@@ -86,13 +86,21 @@ AI Think Step ─────────────────────┘
         Simulation.Tick()
           1. think pass — NPCs enqueue, in ascending EntityId order
           2. drain the queue into a batch
-          3. sort deterministically
-          4. validate + apply (Movement.TryMove is the sole authority)
+          3. sort by CommandKind, then by arrival order
+          4. validate + apply — all movement (TryMove), then all combat (TryAttack)
           5. advance tick counter
                                    │
                                    ▼
                   Authoritative World State
 ```
+
+Step 3 is what makes step 4's two phases mean anything. Sorting by kind first means every
+movement in a tick resolves before any combat in that tick, so a player who moves and attacks
+in the same tick attacks from the tile they just moved to. Sorting by arrival order within a
+kind keeps first-in-first-out between two commands of the same kind. The alternative —
+a single arrival-ordered pass — is also deterministic, but it makes "move then attack" and
+"attack then move" different worlds, which is a property of enqueue order rather than of the
+rules.
 
 Time is a fixed 20 Hz tick (`SimulationConstants.TickDurationMs`). `Simulation.Tick()` never
 sleeps and never reads a clock — pacing lives entirely in the CLI, which uses a

@@ -52,17 +52,31 @@ public sealed class Simulation(World world, int seed)
 
         // APPLY -- deterministic, and the tie-break that falls out of it is worth knowing about.
         //
-        // OrderBy(Sequence) is arrival order: CommandQueue stamps a monotonically increasing
-        // ordinal on enqueue, so whoever asked first resolves first. Within a single source that
-        // is exactly first-in-first-out -- two players' commands land in the order the players
-        // sent them and are applied in that order.
+        // Two sort keys, and the first is the one the milestone plan asks for. Ordering by
+        // CommandKind groups the batch into phases -- every move resolves before any attack --
+        // so a player who moves and attacks on the same tick attacks from the tile they just
+        // moved to. That is the plan's "2. movement, 3. combat" written as one pass instead of
+        // two loops. The alternative, a single arrival-ordered pass, is equally deterministic
+        // but makes "move then attack" and "attack then move" two different worlds, so the
+        // outcome would depend on how a client happened to batch its intents.
         //
-        // Across sources it is not a fairness rule, it is a consequence of WHERE the think pass
-        // sits. Anything enqueued from outside (player input, network) has already been sitting in
-        // the queue by the time the think pass runs, so every player command carries a lower
-        // ordinal than every npc command raised this tick. Two entities contesting the same
-        // walkable tile on the same tick therefore always resolve player-first -- exercised on
-        // every contested tick by AiTest. Among several npcs, the lower EntityId goes first.
+        // Sequence is the second key and is arrival order: CommandQueue stamps a monotonically
+        // increasing ordinal on enqueue, so among commands of the SAME kind whoever asked first
+        // resolves first. Within a single source that is exactly first-in-first-out -- two
+        // players' moves land in the order the players sent them and are applied in that order.
+        //
+        // Note the phase grouping is a primary/secondary key on one sort, not a hard-coded
+        // precedence: it says nothing about which entity kind goes first, only that a move
+        // precedes an attack. Attacks remain arrival-ordered among themselves, so an NPC that
+        // learns to attack will contend with a player's attack on equal terms.
+        //
+        // Arrival order across sources is not a fairness rule either -- it is a consequence of
+        // WHERE the think pass sits. Anything enqueued from outside (player input, network) has
+        // already been sitting in the queue by the time the think pass runs, so every player
+        // command carries a lower ordinal than every npc command raised this tick. Two entities
+        // contesting the same walkable tile on the same tick therefore always resolve
+        // player-first -- exercised on every contested tick by AiTest. Among several npcs, the
+        // lower EntityId goes first.
         //
         // So: "the player always wins the tile" is not a hard-coded precedence over npc kinds,
         // and there is no knob to flip. It is arrival order over the only timeline these two
@@ -75,25 +89,17 @@ public sealed class Simulation(World world, int seed)
         // instead of blocking, a priority attribute, line of sight -- not ordering ones. All of
         // those are still deferred: Milestone 6 settled collision as "no pushing/bumping, no
         // swapping", and nothing since has revisited it.
-        foreach (var command in batch.OrderBy(c => c.Sequence))
+        foreach (var command in batch.OrderBy(c => c.Command.CommandKind).ThenBy(c => c.Sequence))
         {
             Console.WriteLine($"tick {TickNumber}: received {command}");
 
             switch (command.Command)
             {
                 case MoveCommand moveCommand:
-                    var result = Movement.TryMove(
-                        World,
-                        moveCommand.EntityId,
-                        moveCommand.Direction,
-                        TickNumber
-                    );
-
-                    if (result == MoveResult.Success)
-                        Console.WriteLine($"tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
-                    else
-                        Console.WriteLine($"tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
-
+                    ExecuteMovementCommand(moveCommand);
+                    break;
+                case AttackCommand attackCommand:
+                    ExecuteAttackCommand(attackCommand);
                     break;
                 default:
                     throw new InvalidOperationException($"Unhandled command type: {command.GetType()}");
@@ -104,4 +110,29 @@ public sealed class Simulation(World world, int seed)
     }
 
     public void Enqueue(Command command) => _pending.Enqueue(command);
+
+    private void ExecuteMovementCommand(MoveCommand moveCommand)
+    {
+        var result = Movement.TryMove(World, moveCommand.EntityId, moveCommand.Direction, TickNumber);
+
+        if (result == MoveResult.Success)
+            Console.WriteLine($"tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
+        else
+            Console.WriteLine($"tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
+    }
+
+    private void ExecuteAttackCommand(AttackCommand attackCommand)
+    {
+        var attackResult = Combat.TryAttack(
+            World,
+            attackCommand.AttackerId,
+            attackCommand.TargetId,
+            TickNumber
+        );
+
+        if (attackResult == AttackResult.Hit)
+            Console.WriteLine($"tick {TickNumber}: attack command succeeded for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId}");
+        else
+            Console.WriteLine($"tick {TickNumber}: attack command failed for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId} with result {attackResult}");
+    }
 }
