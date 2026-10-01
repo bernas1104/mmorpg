@@ -92,7 +92,7 @@ public sealed class SimulationTest
     }
 
     private static GameServer.Simulation.Simulation CreateSimulation()
-        => new(new World(Map.CreateEmpty(8, 8)));
+        => new(new World(Map.CreateEmpty(8, 8)), 1);
 
     /// <summary>
     /// Runs <paramref name="action"/> with Console output redirected and returns what it wrote.

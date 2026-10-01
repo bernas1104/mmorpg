@@ -40,7 +40,7 @@ public sealed class MovementTest
     {
         _map = Map.FromRows(_mapRows);
         _world = new(_map);
-        _simulation = new(_world);
+        _simulation = new(_world, 1);
     }
 
     [Fact]

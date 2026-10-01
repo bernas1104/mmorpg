@@ -29,16 +29,90 @@ string[,] mapRows = new string[,]
         { ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "." },
     };
 
+const int exitOk = 0;
+const int exitUsageError = 2;
+
+void PrintUsage()
+{
+    Console.WriteLine("Usage: dotnet run --project src/GameServer.Cli -- [--seed <n>]");
+    Console.WriteLine("  --seed <n>     Seed the simulation RNG with <n> instead of fresh entropy.");
+    Console.WriteLine("                 Any 32-bit integer, 0 included; the value used is always printed at startup.");
+    Console.WriteLine("  -h, --help     Show this help and exit.");
+    Console.WriteLine();
+    Console.WriteLine("Commands are read from stdin, e.g.: echo \"move 1 North\"");
+}
+
+// Host arguments (argv) configure the run itself and are therefore resolved here, once,
+// BEFORE the Simulation is constructed. Two deliberate non-invocations:
+//
+//   - argv is NOT routed through CommandParser. That parser is the in-band command
+//     channel (stdin) and speaks the simulation's command language ("move <id> <dir>");
+//     a process flag is a different language, and merging them means a typo'd flag comes
+//     back as "Unknown command" from a parser that had no business seeing it.
+//   - argv is NOT read through PollInput, which only ever looks at stdin. PollInput stays
+//     exactly as it was: it is the tick-loop's input producer, nothing else.
+//
+// The ordering is the whole reason this is up here rather than at the top of PollInput:
+// by the time PollInput first runs, `simulation` is already seeded, so a "--seed 1" that
+// arrived in-band would be accepted and then change nothing -- the worst kind of bug,
+// one that looks like it worked.
+//
+// Unknown arguments are an error, not a shrug: silently ignoring a misspelled --seed
+// would hand back a run that is unreproducible while claiming it was seeded.
+int? seedOverride = null;
+
+for (var i = 0; i < args.Length; i++)
+{
+    switch (args[i])
+    {
+        case "--seed":
+            if (i + 1 >= args.Length)
+            {
+                Console.Error.WriteLine("Error: --seed requires a value. Usage: --seed <n>");
+                return exitUsageError;
+            }
+
+            var seedText = args[++i];
+
+            if (!int.TryParse(seedText, out var parsedSeed))
+            {
+                Console.Error.WriteLine($"Error: --seed expects an integer, got '{seedText}'.");
+                return exitUsageError;
+            }
+
+            // Any integer is a valid seed, 0 included: Rng remaps zero off the generator's
+            // absorbing state rather than refusing to exist, so there is nothing to reject here
+            // and no usage error to invent.
+            seedOverride = parsedSeed;
+            break;
+
+        case "-h":
+        case "--help":
+            PrintUsage();
+            return 0;
+
+        default:
+            Console.Error.WriteLine($"Error: unknown argument '{args[i]}'.");
+            PrintUsage();
+            return exitUsageError;
+    }
+}
+
+// Entropy is read here and only here (see the milestone plan: the CLI mints a seed when
+// the caller didn't supply one), and the startup line below records whichever value was
+// used so the run can be replayed.
+var seed = seedOverride ?? (int)DateTime.UtcNow.Ticks;
+
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
     ? null
     : PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; cts.Cancel(); });
 
-var simulation = new Simulation(new World(Map.FromRows(mapRows)));
+var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed);
 simulation.World.SpawnPlayer(new TilePosition(4, 4));
 simulation.World.SpawnPlayer(new TilePosition(2, 4));
-simulation.World.SpawnNPC(new TilePosition(3, 3));
+simulation.World.SpawnNPC(new TilePosition(9, 9));
 simulation.World.SpawnNPC(new TilePosition(10, 10));
 
 const int maxCatchUpTicks = 5;
@@ -154,7 +228,7 @@ void PollInput()
     }
 }
 
-Console.WriteLine($"Simulation started. Tick {simulation.TickNumber}");
+Console.WriteLine($"Simulation started. Tick {simulation.TickNumber}, Seed {simulation.RngSeed}");
 
 while (!cts.Token.IsCancellationRequested)
 {
@@ -193,3 +267,5 @@ while (!cts.Token.IsCancellationRequested)
 }
 
 Console.WriteLine($"Simulation stopped. Tick {simulation.TickNumber}");
+
+return exitOk;

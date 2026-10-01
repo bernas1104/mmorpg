@@ -44,6 +44,23 @@ public sealed class World(Map map)
         ? entity
         : null;
 
+    /// <summary>
+    /// Every entity of the given kind, in ascending <see cref="EntityId"/> order.
+    /// </summary>
+    /// <remarks>
+    /// The sort is the contract, not a nicety. Callers -- the ai think pass above all -- draw
+    /// from the simulation's single generator once per entity in whatever order they appear, so
+    /// this sequence's order decides how many draws happen and in what sequence, and therefore
+    /// becomes part of the simulation's identity. Dictionary enumeration order is explicitly not
+    /// guaranteed by .NET and does shift when entities are added or removed, so iterating the raw
+    /// values would make behaviour correct only by accident and until the next edit.
+    /// </remarks>
+    public IEnumerable<Entity> GetAll(EntityKind kind) => _entities.Values
+        .Where(entity => entity.Kind == kind)
+        .OrderBy(entity => entity.Id.Value);
+
+    public IEnumerable<Entity> GetAllNPCs() => GetAll(EntityKind.NPC);
+
     public bool HasEntityOnTile(TilePosition tilePosition)
         => _entities.Values.Any(entity => entity.TilePosition == tilePosition);
 }

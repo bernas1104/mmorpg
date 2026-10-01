@@ -1,4 +1,5 @@
 using GameServer.Simulation;
+using GameServer.Simulation.Enums;
 using GameServer.Unit.Tests.Mocks;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -87,5 +88,39 @@ public sealed class WorldTest
 
         // Assert
         nonExistingEntity.Should().BeNull();
+    }
+
+    [Fact]
+    public void GivenMixedEntities_WhenGettingAllNPCs_ThenReturnsOnlyNpcsInAscendingIdOrder()
+    {
+        // Arrange
+        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var world = new World(map);
+
+        world.SpawnNPC(new TilePosition(3, 3));
+        world.SpawnPlayer(new TilePosition(5, 5));
+        world.SpawnNPC(new TilePosition(7, 7));
+        world.SpawnPlayer(new TilePosition(9, 9));
+        world.SpawnNPC(new TilePosition(11, 11));
+
+        // Act
+        var npcs = world.GetAllNPCs().ToList();
+
+        // Assert
+        // Ids 0, 2 and 4 by spawn order, with the players interleaved so this also proves the
+        // kind filter rather than just the ordering.
+        npcs.Select(npc => npc.Id.Value).Should().Equal(0, 2, 4);
+
+        // Ascending id order is the contract, not an implementation detail: the ai think pass
+        // draws from the generator once per npc in this order, so the order of this sequence is
+        // part of how many draws happen and therefore part of the simulation's identity.
+        //
+        // Honest caveat on what this pins: today the OrderBy is defensive rather than load-bearing,
+        // because Ids come from a monotonic counter and Dictionary enumerates an insertion-only
+        // dictionary in insertion order, so dropping the OrderBy would not fail this. What the
+        // test does buy is that swapping the backing store, adding entity removal, or handing out
+        // ids in any other order now fails loudly instead of silently changing every rng draw
+        // that follows.
+        npcs.Select(npc => npc.Kind).Should().OnlyContain(kind => kind == EntityKind.NPC);
     }
 }
