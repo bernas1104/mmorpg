@@ -1,9 +1,11 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
+using GameServer.Unit.Tests.Collections;
 
 namespace GameServer.Unit.Tests.Simulation;
 
+[Collection(ConsoleOutputCollection.Name)]
 public sealed class CombatTest
 {
     private readonly string[,] _mapRows = new string[,]
@@ -156,7 +158,7 @@ public sealed class CombatTest
         var attackCommand = new AttackCommand(attackerId, targetId);
 
         // Act
-        for (int i = 0; i < Combat.AttackCooldownTicks * 20; i++) // Attack multiple times to ensure target health goes below zero
+        for (int i = 0; i < Combat.AttackCooldownTicks * 11; i++) // Attack multiple times to ensure target health goes below zero
         {
             if (i % Combat.AttackCooldownTicks == 0)
                 _simulation.Enqueue(attackCommand);
@@ -167,5 +169,38 @@ public sealed class CombatTest
         // Assert
         var target = _world.GetEntity(targetId)!;
         target.Health.Should().Be(0); // Health should be clamped at zero
+    }
+
+    [Fact]
+    public void GivenDeadAttacker_WhenAttacking_ThenAttackFails()
+    {
+        // Arrange
+        var deadAttackerId = _world.SpawnPlayer(new TilePosition(3, 3));
+        var deadAttacker = _world.GetEntity(deadAttackerId);
+        deadAttacker!.TakeDamage(deadAttacker.Health);
+
+        var targetId = _world.SpawnPlayer(new TilePosition(3, 4));
+
+        // Act
+        var result = Combat.TryAttack(_world, deadAttackerId, targetId, 0);
+
+        // Assert
+        result.Should().Be(AttackResult.InvalidDead);
+    }
+
+    [Fact]
+    public void GivenDeadTarget_WhenAttacked_ThenAttackFails()
+    {
+        // Arrange
+        var attackerId = _world.SpawnPlayer(new TilePosition(3, 3));
+        var targetId = _world.SpawnPlayer(new TilePosition(3, 4));
+        var target = _world.GetEntity(targetId);
+        target!.TakeDamage(target.Health);
+
+        // Act
+        var result = Combat.TryAttack(_world, attackerId, targetId, 0);
+
+        // Assert
+        result.Should().Be(AttackResult.InvalidDead);
     }
 }

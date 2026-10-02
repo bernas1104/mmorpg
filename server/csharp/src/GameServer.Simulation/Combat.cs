@@ -17,6 +17,11 @@ public static class Combat
 
         if (attacker == null || target == null) return AttackResult.InvalidEntity;
 
+        if (
+            attacker.LifecycleState != LifecycleState.Alive
+            || target.LifecycleState != LifecycleState.Alive
+        ) return AttackResult.InvalidDead;
+
         if (!IsWithinAttackRange(attacker, target)) return AttackResult.InvalidOutOfRange;
 
         if (currentTick < attacker.NextAttackAllowedTick) return AttackResult.InvalidExhaustion;

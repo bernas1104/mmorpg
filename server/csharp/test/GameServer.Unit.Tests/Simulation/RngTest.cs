@@ -43,8 +43,6 @@ public sealed class RngTest
         var draws = Enumerable.Range(0, 10).Select(_ => rng.Next()).ToList();
 
         // Assert
-        // Zero is xorshift's absorbing state, so a generator left on it emits zero forever: a
-        // dead generator that still looks perfectly reproducible.
         draws.Should().OnlyContain(draw => draw != 0);
         draws.Should().OnlyHaveUniqueItems();
     }
@@ -61,16 +59,12 @@ public sealed class RngTest
         var oneDraws = Enumerable.Range(0, 10).Select(_ => one.Next()).ToList();
 
         // Assert
-        // Pinning the "only zero is remapped" half of the mapping: had seed 0 been folded onto
-        // some seed a human is likely to type, those two runs would be indistinguishable.
         zeroDraws.Should().NotEqual(oneDraws);
     }
 
     [Fact]
     public void GivenAnySeed_WhenConstructed_ThenTheSeedIsReportedBackUnchanged()
     {
-        // The logged seed has to be re-typeable to replay the run, so the property reports what
-        // the caller asked for, not the internal state the generator was mapped onto.
         foreach (var seed in new[] { 0, 1, -1, int.MinValue, int.MaxValue })
             new Rng(seed).Seed.Should().Be(seed);
     }

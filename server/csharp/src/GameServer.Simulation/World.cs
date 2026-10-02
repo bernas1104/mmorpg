@@ -55,12 +55,32 @@ public sealed class World(Map map)
     /// guaranteed by .NET and does shift when entities are added or removed, so iterating the raw
     /// values would make behaviour correct only by accident and until the next edit.
     /// </remarks>
-    public IEnumerable<Entity> GetAll(EntityKind kind) => _entities.Values
+    public IEnumerable<Entity> GetAllOfKind(EntityKind kind) => _entities.Values
         .Where(entity => entity.Kind == kind)
         .OrderBy(entity => entity.Id.Value);
 
-    public IEnumerable<Entity> GetAllNPCs() => GetAll(EntityKind.NPC);
+    public IEnumerable<Entity> GetAll() => [.. _entities.Values.OrderBy(entity => entity.Id.Value)];
+
+    public IEnumerable<Entity> GetAllAliveNPCs() => GetAllOfKind(EntityKind.NPC)
+        .Where(entity => entity.LifecycleState == LifecycleState.Alive);
+
+    public IEnumerable<Entity> GetAllDead() =>
+        [.. GetAll().Where(entity => entity.LifecycleState == LifecycleState.Dead)];
+
+    public IEnumerable<Entity> GetAllRemoved() =>
+        [.. GetAll().Where(entity => entity.LifecycleState == LifecycleState.Removed)];
 
     public bool HasEntityOnTile(TilePosition tilePosition)
-        => _entities.Values.Any(entity => entity.TilePosition == tilePosition);
+        => GetAll().Any(
+            entity => entity.TilePosition == tilePosition
+                && entity.LifecycleState == LifecycleState.Alive
+        );
+
+    public void RemoveMarkedEntities()
+    {
+        foreach (var id in _entities.Values.ToArray()
+            .Where(entity => entity.LifecycleState == LifecycleState.Removed)
+            .Select(entity => entity.Id)
+        ) _entities.Remove(id);
+    }
 }

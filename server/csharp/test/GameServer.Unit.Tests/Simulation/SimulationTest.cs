@@ -94,15 +94,6 @@ public sealed class SimulationTest
     private static GameServer.Simulation.Simulation CreateSimulation()
         => new(new World(Map.CreateEmpty(8, 8)), 1);
 
-    /// <summary>
-    /// Runs <paramref name="action"/> with Console output redirected and returns what it wrote.
-    ///
-    /// Console redirection is process-global, so this is only sound because every test that
-    /// writes to the console shares a collection with this class and so cannot run
-    /// concurrently. See <see cref="ConsoleOutputCollection"/>. Without that, a parallel
-    /// MovementTest tick appends its own lines here and these ordering assertions fail
-    /// intermittently for reasons that have nothing to do with the code under test.
-    /// </summary>
     private static string CaptureTick(Action action)
     {
         var original = Console.Out;

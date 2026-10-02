@@ -296,18 +296,6 @@ public sealed class AiTest
     [Fact]
     public void GivenPlayerAndNpcContestingTheSameTile_WhenTheTickIsApplied_ThenThePlayerAlwaysWins()
     {
-        // Pins the tie-break documented in Simulation.Tick: arrival order is first-in-first-out
-        // within a source, but the think pass runs after externally-enqueued commands have
-        // already been stamped, so a player always resolves ahead of an npc.
-        //
-        // The corridor map makes the contest unavoidable rather than lucky: the npc at (2,2) has
-        // exactly one walkable neighbour, so whenever it commits to a step it wants (2,1) -- which
-        // is precisely the tile the player at (1,1) reaches by moving East. Every contested tick
-        // therefore compares the two claims directly.
-        //
-        // Seeds are varied because an npc only moves when its wander roll succeeds (20% per
-        // eligible tick), so a fixed seed could yield no contest at all and assert nothing. Over
-        // 100 seeds the chance of that is 0.8^100, about 2e-10.
         const int seeds = 100;
 
         var contestedTicks = 0;
@@ -317,7 +305,7 @@ public sealed class AiTest
             // Arrange
             var world = CreateSingleCorridorWorld();
             var npcId = world.SpawnNPC(new TilePosition(2, 2));
-var playerId = world.SpawnPlayer(new TilePosition(1, 1));
+            var playerId = world.SpawnPlayer(new TilePosition(1, 1));
             var simulation = new GameServer.Simulation.Simulation(world, seed);
 
             // Act
@@ -401,7 +389,7 @@ var playerId = world.SpawnPlayer(new TilePosition(1, 1));
 
         foreach (var position in ThreeNpcSpawns) world.SpawnNPC(position);
 
-        return (new GameServer.Simulation.Simulation(world, seed), world.GetAllNPCs().ToList());
+        return (new GameServer.Simulation.Simulation(world, seed), world.GetAllAliveNPCs().ToList());
     }
 
     private static List<List<TilePosition>> TickAndTracePaths(

@@ -201,4 +201,20 @@ public sealed class MovementTest
         _world.GetEntity(winnerId)!.TilePosition.Should().Be(new TilePosition(5, 5));
         _world.GetEntity(loserId)!.TilePosition.Should().Be(new TilePosition(5, 6));
     }
+
+    [Fact]
+    public void GivenDeadPlayer_WhenMoving_ThenReturnsInvalidDead()
+    {
+        // Arrange
+        var deadPlayerId = _world.SpawnPlayer(new TilePosition(5, 5));
+        var deadPlayer = _world.GetEntity(deadPlayerId);
+        deadPlayer!.TakeDamage(deadPlayer.Health);
+
+        // Act
+        var result = Movement.TryMove(_world, deadPlayerId, Direction.North, 0);
+
+        // Assert
+        result.Should().Be(MoveResult.InvalidDead);
+        deadPlayer.TilePosition.Should().Be(new TilePosition(5, 5));
+    }
 }

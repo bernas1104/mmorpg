@@ -17,6 +17,9 @@ public static class Movement
         if (entity is null)
             return MoveResult.InvalidEntity;
 
+        if (entity.LifecycleState != LifecycleState.Alive)
+            return MoveResult.InvalidDead;
+
         var targetPosition = entity.TilePosition.Step(direction);
 
         if (!world.Map.IsWalkable(targetPosition))

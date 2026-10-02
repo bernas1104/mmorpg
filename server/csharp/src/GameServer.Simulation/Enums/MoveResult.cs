@@ -6,5 +6,6 @@ public enum MoveResult
     InvalidEntity,
     InvalidTarget,
     InvalidExhaustion,
-    TileOccupied
+    TileOccupied,
+    InvalidDead
 }

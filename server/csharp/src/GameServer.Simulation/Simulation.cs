@@ -41,7 +41,7 @@ public sealed class Simulation(World world, int seed)
         // It also fixes the order in which entities draw from the generator -- ascending id, via
         // World.GetAll -- which is what makes "same seed, same run" hold. See the tie-break note
         // below for what that costs.
-        foreach (var npc in World.GetAllNPCs())
+        foreach (var npc in World.GetAllAliveNPCs())
         {
             var commands = Ai.Think(World, npc, Rng, TickNumber);
             foreach (var command in commands)
@@ -105,6 +105,11 @@ public sealed class Simulation(World world, int seed)
                     throw new InvalidOperationException($"Unhandled command type: {command.GetType()}");
             }
         }
+
+        foreach (var deadEntity in World.GetAllDead())
+            deadEntity.DecrementRemovalTick();
+
+        World.RemoveMarkedEntities();
 
         TickNumber++;
     }

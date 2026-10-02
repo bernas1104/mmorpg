@@ -36,7 +36,7 @@ public static class Ai
     {
         // NPCs only. A player is driven by its input, and letting this run for players would make
         // their position a function of a draw they never asked for.
-        if (npc.Kind != EntityKind.NPC) return [];
+        if (npc.Kind != EntityKind.NPC || npc.LifecycleState != LifecycleState.Alive) return [];
 
         // The gate below is a question about *permission to act*, not a reimplementation of the
         // movement rule. TryMove stays the sole authority: it re-checks the cooldown against the
