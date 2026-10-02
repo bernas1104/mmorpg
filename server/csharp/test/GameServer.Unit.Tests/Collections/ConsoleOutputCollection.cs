@@ -17,7 +17,9 @@ namespace GameServer.Unit.Tests.Collections;
 /// but a parallel sibling was still writing into the redirected writer.
 ///
 /// Every class that reaches <c>Simulation.Tick()</c> belongs here. Classes that neither
-/// write nor read the console should stay out so they keep running in parallel.
+/// write nor read the console should stay out so they keep running in parallel. Reading the
+/// log back goes through <c>Helpers.ConsoleCapture</c> rather than a private copy of the
+/// redirect, for the reason above: a second copy is a second thing to forget to serialize.
 /// </summary>
 public sealed class ConsoleOutputCollection
 {

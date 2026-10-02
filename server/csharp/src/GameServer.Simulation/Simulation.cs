@@ -121,9 +121,9 @@ public sealed class Simulation(World world, int seed)
         var result = Movement.TryMove(World, moveCommand.EntityId, moveCommand.Direction, TickNumber);
 
         if (result == MoveResult.Success)
-            Console.WriteLine($"tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
+            Console.WriteLine($"Tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
         else
-            Console.WriteLine($"tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
+            Console.WriteLine($"Tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
     }
 
     private void ExecuteAttackCommand(AttackCommand attackCommand)
@@ -136,8 +136,8 @@ public sealed class Simulation(World world, int seed)
         );
 
         if (attackResult == AttackResult.Hit)
-            Console.WriteLine($"tick {TickNumber}: attack command succeeded for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId}");
+            Console.WriteLine($"Tick {TickNumber}: attack command succeeded for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId}");
         else
-            Console.WriteLine($"tick {TickNumber}: attack command failed for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId} with result {attackResult}");
+            Console.WriteLine($"Tick {TickNumber}: attack command failed for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId} with result {attackResult}");
     }
 }

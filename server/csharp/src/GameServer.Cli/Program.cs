@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Constants;
+using GameServer.Simulation.Enums;
 
 string[,] mapRows = new string[,]
     {
@@ -116,6 +117,20 @@ simulation.World.SpawnPlayer(new TilePosition(2, 4));
 simulation.World.SpawnNPC(new TilePosition(9, 9));
 simulation.World.SpawnNPC(new TilePosition(10, 10));
 
+var replayWorld = new World(Map.FromRows(mapRows));
+simulation.World.GetAll().ToList()
+    .ForEach(
+        entity =>
+        {
+            if (entity.Kind == EntityKind.Player)
+                replayWorld.SpawnPlayer(entity.TilePosition);
+            else
+                replayWorld.SpawnNPC(entity.TilePosition);
+        }
+    );
+
+List<CommandLogEntry> commandLog = [];
+
 const int maxCatchUpTicks = 5;
 long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TickDurationMs / 1000;
 
@@ -149,7 +164,9 @@ void CommandParser(string? input)
                 return;
             }
 
-            simulation.Enqueue(new MoveCommand(new EntityId(id), direction));
+            var moveCommand = new MoveCommand(new EntityId(id), direction);
+            simulation.Enqueue(moveCommand);
+            commandLog.Add(new CommandLogEntry(simulation.TickNumber, moveCommand));
             return;
         case "attack":
             if (parts.Length != 3)
@@ -167,7 +184,9 @@ void CommandParser(string? input)
                 return;
             }
 
-            simulation.Enqueue(new AttackCommand(new EntityId(attackerId), new EntityId(targetId)));
+            var attackCommand = new AttackCommand(new EntityId(attackerId), new EntityId(targetId));
+            simulation.Enqueue(attackCommand);
+            commandLog.Add(new CommandLogEntry(simulation.TickNumber, attackCommand));
             return;
         default:
             Console.WriteLine("Unknown command");
@@ -260,8 +279,8 @@ while (!cts.Token.IsCancellationRequested)
     int ticksThisFrame = 0;
     while (accumulator >= tickDurationTicks && ticksThisFrame < maxCatchUpTicks)
     {
-        simulation.Tick();
         Console.WriteLine($"Tick {simulation.TickNumber}");
+        simulation.Tick();
 
         accumulator -= tickDurationTicks;
         nextTickDue += tickDurationTicks;
@@ -285,6 +304,19 @@ while (!cts.Token.IsCancellationRequested)
     else Thread.SpinWait(64);
 }
 
+Console.WriteLine("---");
 Console.WriteLine($"Simulation stopped. Tick {simulation.TickNumber}");
+Console.WriteLine("---");
+
+var replay = new Replay(
+    new RecordedRun(
+        simulation.TickNumber,
+        simulation.RngSeed,
+        replayWorld,
+        commandLog
+    )
+);
+
+replay.ReplayRecordedRun();
 
 return exitOk;

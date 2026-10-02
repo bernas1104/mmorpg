@@ -66,8 +66,8 @@ Roadmap: [`.plans/phase-1-plan.md`](.plans/phase-1-plan.md). Milestones 0–8 ar
 | 6   | Multi-entity collision with deterministic conflict resolution        | ✅     |
 | 7   | NPCs as command sources: wander AI, hand-rolled xorshift `Rng`       | ✅     |
 | 8   | Health, damage, combat range, attack cooldown                        | ✅     |
-| 9   | Entity lifecycle: death, removal, respawn                            | ⬜     |
-| 10  | Determinism pass & replay harness                                    | ⬜     |
+| 9   | Entity lifecycle: death, removal, respawn                            | ✅     |
+| 10  | Determinism pass & replay harness                                    | ✅     |
 | 11  | World state snapshot (the networking seam)                           | ⬜     |
 | 12  | Test consolidation & `README.md` per project                         | ⬜     |
 

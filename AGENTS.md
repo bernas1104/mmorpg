@@ -50,3 +50,4 @@ These are project rules, not style preferences — breaking them silently breaks
 
 - Don't leave comments to the code unless they add **REAL** value;
 - **NEVER** leave comments on tests. Tests should have self explanatory names. Comments should be irrelevant;
+- Use `AwesomeAssertions` instead of xUnit's `Assert` for all tests;

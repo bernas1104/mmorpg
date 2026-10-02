@@ -2,6 +2,7 @@ using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
 using GameServer.Unit.Tests.Collections;
+using GameServer.Unit.Tests.Helpers;
 using GameServer.Unit.Tests.Mocks;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -46,7 +47,7 @@ public sealed class LifecycleTest
             var stateBeforeTick = target.LifecycleState;
 
             simulation.Enqueue(new AttackCommand(attackerId, targetId));
-            RunTicks(simulation, 1);
+            ConsoleCapture.Tick(simulation, 1);
 
             if (stateBeforeTick == LifecycleState.Alive && target.LifecycleState == LifecycleState.Dead)
                 tickOfDeath = simulation.TickNumber - 1; // Tick() advances the counter at its end
@@ -74,7 +75,7 @@ public sealed class LifecycleTest
         KillWithAttacks(world, simulation, attackerId, targetId);
 
         // Act
-        RunTicks(simulation, ticksIntoWindow);
+        ConsoleCapture.Tick(simulation, ticksIntoWindow);
 
         // Assert
         var corpse = world.GetEntity(targetId);
@@ -95,7 +96,7 @@ public sealed class LifecycleTest
 
         // Act
         simulation.Enqueue(new AttackCommand(attackerId, targetId));
-        var log = RunTicks(simulation, 1);
+        var log = ConsoleCapture.Tick(simulation, 1);
 
         // Assert
         world.GetEntity(targetId)!.Health.Should().Be(0);
@@ -115,7 +116,7 @@ public sealed class LifecycleTest
 
         // Act
         simulation.Enqueue(new MoveCommand(targetId, Direction.North));
-        var log = RunTicks(simulation, 1);
+        var log = ConsoleCapture.Tick(simulation, 1);
 
         // Assert
         world.GetEntity(targetId)!.TilePosition.Should().Be(SealedTargetSpawn);
@@ -152,13 +153,13 @@ public sealed class LifecycleTest
             var simulation = new GameServer.Simulation.Simulation(world, Seed);
             var targetId = world.SpawnNPC(SealedTargetSpawn);
             var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
-            RunTicks(simulation, ticksBeforeDeath);
+            ConsoleCapture.Tick(simulation, ticksBeforeDeath);
             KillWithAttacks(world, simulation, attackerId, targetId);
 
             var ticksSurvived = 0;
             while (world.GetEntity(targetId) is not null && ticksSurvived < Entity.DefaultRemovalTicks * 2)
             {
-                RunTicks(simulation, 1);
+                ConsoleCapture.Tick(simulation, 1);
                 ticksSurvived++;
             }
 
@@ -193,7 +194,7 @@ public sealed class LifecycleTest
         var windowAtDeath = corpse.RemovalTick;
 
         // Act
-        RunTicks(simulation, 40);
+        ConsoleCapture.Tick(simulation, 40);
         var windowBeforeSecondHit = corpse.RemovalTick;
         corpse.TakeDamage(1);
         var windowAfterSecondHit = corpse.RemovalTick;
@@ -216,7 +217,7 @@ public sealed class LifecycleTest
         var targetId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
-        RunTicks(simulation, (int)Entity.DefaultRemovalTicks);
+        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
 
         // Assert
         world.GetEntity(targetId).Should().BeNull();
@@ -224,7 +225,7 @@ public sealed class LifecycleTest
         // Act
         simulation.Enqueue(new MoveCommand(targetId, Direction.North));
         simulation.Enqueue(new AttackCommand(attackerId, targetId));
-        var log = RunTicks(simulation, 1);
+        var log = ConsoleCapture.Tick(simulation, 1);
 
         // Assert
         log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.InvalidEntity}");
@@ -242,7 +243,7 @@ public sealed class LifecycleTest
         var firstId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
-        RunTicks(simulation, (int)Entity.DefaultRemovalTicks);
+        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
 
         // Act
         var secondId = world.SpawnNPC(SealedTargetSpawn);
@@ -269,12 +270,12 @@ public sealed class LifecycleTest
         }
 
         // Assert
-        RunTicks(simulation, (int)Entity.DefaultRemovalTicks / 2);
+        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks / 2);
         foreach (var id in corpses)
             world.GetEntity(id).Should().NotBeNull($"corpse {id} vanished before its window ended");
 
         // Act
-        RunTicks(simulation, (int)Entity.DefaultRemovalTicks);
+        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
 
         // Assert
         foreach (var id in corpses)
@@ -321,7 +322,7 @@ public sealed class LifecycleTest
 
         for (var tick = 0; tick < TicksToTrace; tick++)
         {
-            RunTicks(simulation, 1);
+            ConsoleCapture.Tick(simulation, 1);
             path.Add(npc.TilePosition);
         }
 
@@ -338,7 +339,7 @@ public sealed class LifecycleTest
         for (var tick = 0; tick < AttackTickBudget; tick++)
         {
             simulation.Enqueue(new AttackCommand(attackerId, targetId));
-            RunTicks(simulation, 1);
+            ConsoleCapture.Tick(simulation, 1);
 
             if (world.GetEntity(targetId)?.LifecycleState == LifecycleState.Dead)
                 return simulation.TickNumber - 1; // Tick() advances the counter at its end
@@ -347,23 +348,5 @@ public sealed class LifecycleTest
         throw new InvalidOperationException(
             $"target {targetId} was still alive after {AttackTickBudget} ticks of attacks"
         );
-    }
-
-    private static string RunTicks(GameServer.Simulation.Simulation simulation, int ticks)
-    {
-        var original = Console.Out;
-        var writer = new StringWriter();
-
-        Console.SetOut(writer);
-        try
-        {
-            for (var i = 0; i < ticks; i++) simulation.Tick();
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
-
-        return writer.ToString();
     }
 }

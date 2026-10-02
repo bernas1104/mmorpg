@@ -2,6 +2,7 @@ using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
 using GameServer.Unit.Tests.Collections;
+using GameServer.Unit.Tests.Helpers;
 using GameServer.Unit.Tests.Mocks;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -49,7 +50,7 @@ public sealed class AiTest
         var moved = false;
         for (int tick = 0; tick < TicksToRun; tick++)
         {
-            RunTicks(simulation, 1);
+            ConsoleCapture.Tick(simulation, 1);
 
             world.Map.IsWalkable(npc.TilePosition).Should().BeTrue(
                 $"npc stood on a non-walkable tile at tick {tick}: {npc.TilePosition}"
@@ -164,7 +165,7 @@ public sealed class AiTest
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
 
         // Act
-        var log = RunTicks(simulation, TicksToRun);
+        var log = ConsoleCapture.Tick(simulation, TicksToRun);
 
         // Assert
         log.Should().NotContain(
@@ -283,7 +284,7 @@ public sealed class AiTest
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
 
         // Act
-        var log = RunTicks(simulation, TicksToRun);
+        var log = ConsoleCapture.Tick(simulation, TicksToRun);
 
         // Assert
         log.Should().Contain(
@@ -310,7 +311,7 @@ public sealed class AiTest
 
             // Act
             simulation.Enqueue(new MoveCommand(playerId, Direction.East));
-            var log = RunTicks(simulation, 1);
+            var log = ConsoleCapture.Tick(simulation, 1);
 
             var npcMoved = log.Contains($"received MoveCommand(EntityId: {npcId}");
             if (!npcMoved) continue;
@@ -337,24 +338,6 @@ public sealed class AiTest
     private static World CreateOpenWorld() => new(Map.FromRows(TileMock.GetWallBoundedTiles(20, 20)));
 
     private static World CreateSingleCorridorWorld() => new(Map.FromRows(SingleCorridorRows));
-
-    private static string RunTicks(GameServer.Simulation.Simulation simulation, int ticks)
-    {
-        var original = Console.Out;
-        var writer = new StringWriter();
-
-        Console.SetOut(writer);
-        try
-        {
-            for (int i = 0; i < ticks; i++) simulation.Tick();
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
-
-        return writer.ToString();
-    }
 
     private static WalkHistory ThinkWalk(int seed)
     {
@@ -401,7 +384,7 @@ public sealed class AiTest
 
         for (int tick = 0; tick < TicksToRun; tick++)
         {
-            RunTicks(simulation, 1);
+            ConsoleCapture.Tick(simulation, 1);
 
             for (int i = 0; i < npcs.Count; i++) paths[i].Add(npcs[i].TilePosition);
         }

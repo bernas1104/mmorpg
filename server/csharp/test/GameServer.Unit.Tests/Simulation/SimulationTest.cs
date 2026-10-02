@@ -3,6 +3,7 @@ using System.Diagnostics;
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Unit.Tests.Collections;
+using GameServer.Unit.Tests.Helpers;
 
 namespace GameServer.Unit.Tests.Simulation;
 
@@ -34,8 +35,8 @@ public sealed class SimulationTest
         simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
 
         // Act
-        var firstTick = CaptureTick(simulation.Tick);
-        var secondTick = CaptureTick(simulation.Tick);
+        var firstTick = ConsoleCapture.Capture(simulation.Tick);
+        var secondTick = ConsoleCapture.Capture(simulation.Tick);
 
         // Assert
         firstTick.Should().Contain("North");
@@ -51,10 +52,10 @@ public sealed class SimulationTest
 
         // Act
         simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
-        var firstTick = CaptureTick(simulation.Tick);
+        var firstTick = ConsoleCapture.Capture(simulation.Tick);
 
         simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.South));
-        var secondTick = CaptureTick(simulation.Tick);
+        var secondTick = ConsoleCapture.Capture(simulation.Tick);
 
         // Assert
         firstTick.Should().Contain("North");
@@ -78,7 +79,7 @@ public sealed class SimulationTest
         foreach (var command in commands) simulation.Enqueue(command);
 
         // Act
-        var tick = CaptureTick(simulation.Tick);
+        var tick = ConsoleCapture.Capture(simulation.Tick);
 
         // Assert
         var positions = commands
@@ -93,22 +94,4 @@ public sealed class SimulationTest
 
     private static GameServer.Simulation.Simulation CreateSimulation()
         => new(new World(Map.CreateEmpty(8, 8)), 1);
-
-    private static string CaptureTick(Action action)
-    {
-        var original = Console.Out;
-        var writer = new StringWriter();
-
-        Console.SetOut(writer);
-        try
-        {
-            action();
-        }
-        finally
-        {
-            Console.SetOut(original);
-        }
-
-        return writer.ToString();
-    }
 }
