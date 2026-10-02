@@ -1,4 +1,5 @@
 using GameServer.Simulation.Enums;
+using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Simulation;
 
@@ -52,5 +53,22 @@ public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePositi
         RemovalTick--;
 
         if (RemovalTick == 0) LifecycleState = LifecycleState.Removed;
+    }
+
+    public static Entity CreateFromSnapshot(EntitySnapshot snapshot)
+    {
+        var entity = new Entity(
+            snapshot.Id,
+            snapshot.Kind,
+            snapshot.TilePosition
+        );
+
+        entity.UpdateNextMoveAllowedTick(snapshot.NextMoveAllowedTick);
+        entity.Health = snapshot.Health;
+        entity.NextAttackAllowedTick = snapshot.NextAttackAllowedTick;
+        entity.LifecycleState = snapshot.LifecycleState;
+        entity.RemovalTick = snapshot.RemovalTick;
+
+        return entity;
     }
 }

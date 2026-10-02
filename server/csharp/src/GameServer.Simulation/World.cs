@@ -1,4 +1,5 @@
 using GameServer.Simulation.Enums;
+using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Simulation;
 
@@ -82,5 +83,22 @@ public sealed class World(Map map)
             .Where(entity => entity.LifecycleState == LifecycleState.Removed)
             .Select(entity => entity.Id)
         ) _entities.Remove(id);
+    }
+
+    public static World CreateFromSnapshot(WorldSnapshot snapshot)
+    {
+        var world = new World(snapshot.Map)
+        {
+            IdCounter = snapshot.IdCounter
+        };
+
+
+        foreach (var entitySnapshot in snapshot.Entities)
+        {
+            var entity = Entity.CreateFromSnapshot(entitySnapshot);
+            world._entities.Add(entity.Id, entity);
+        }
+
+        return world;
     }
 }

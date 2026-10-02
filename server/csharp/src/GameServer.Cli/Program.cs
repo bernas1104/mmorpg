@@ -5,6 +5,7 @@ using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Constants;
 using GameServer.Simulation.Enums;
+using GameServer.Simulation.Snapshots;
 
 string[,] mapRows = new string[,]
     {
@@ -117,17 +118,7 @@ simulation.World.SpawnPlayer(new TilePosition(2, 4));
 simulation.World.SpawnNPC(new TilePosition(9, 9));
 simulation.World.SpawnNPC(new TilePosition(10, 10));
 
-var replayWorld = new World(Map.FromRows(mapRows));
-simulation.World.GetAll().ToList()
-    .ForEach(
-        entity =>
-        {
-            if (entity.Kind == EntityKind.Player)
-                replayWorld.SpawnPlayer(entity.TilePosition);
-            else
-                replayWorld.SpawnNPC(entity.TilePosition);
-        }
-    );
+var worldSnapshot = Snapshot.CreateWorldSnapshot(simulation.World);
 
 List<CommandLogEntry> commandLog = [];
 
@@ -187,6 +178,24 @@ void CommandParser(string? input)
             var attackCommand = new AttackCommand(new EntityId(attackerId), new EntityId(targetId));
             simulation.Enqueue(attackCommand);
             commandLog.Add(new CommandLogEntry(simulation.TickNumber, attackCommand));
+            return;
+        case "snapshot":
+        case "dump":
+            var snapshot = Snapshot.CreateWorldSnapshot(simulation.World);
+            Console.WriteLine($"--- Snapshot @ Tick {simulation.TickNumber} ---");
+            Console.WriteLine($"Map: {snapshot.Map.Width}x{snapshot.Map.Height}, IdCounter: {snapshot.IdCounter}");
+            Console.WriteLine($"Entities ({snapshot.Entities.Count()}):");
+            foreach (var entity in snapshot.Entities.OrderBy(e => e.Id.Value))
+            {
+                Console.WriteLine(
+                    $"  [{entity.Id.Value}] {entity.Kind} @ ({entity.TilePosition.X},{entity.TilePosition.Y}) | " +
+                    $"HP: {entity.Health}/{entity.MaxHealth} | State: {entity.LifecycleState} | " +
+                    $"NextMove: {entity.NextMoveAllowedTick} | NextAttack: {entity.NextAttackAllowedTick}" +
+                    (entity.RemovalTick.HasValue ? $" | RemovalTick: {entity.RemovalTick.Value}" : string.Empty)
+                );
+            }
+
+            Console.WriteLine("---");
             return;
         default:
             Console.WriteLine("Unknown command");
@@ -304,19 +313,6 @@ while (!cts.Token.IsCancellationRequested)
     else Thread.SpinWait(64);
 }
 
-Console.WriteLine("---");
 Console.WriteLine($"Simulation stopped. Tick {simulation.TickNumber}");
-Console.WriteLine("---");
-
-var replay = new Replay(
-    new RecordedRun(
-        simulation.TickNumber,
-        simulation.RngSeed,
-        replayWorld,
-        commandLog
-    )
-);
-
-replay.ReplayRecordedRun();
 
 return exitOk;

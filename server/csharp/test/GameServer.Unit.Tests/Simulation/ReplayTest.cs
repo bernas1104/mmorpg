@@ -3,6 +3,7 @@ using AwesomeAssertions;
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
+using GameServer.Simulation.Snapshots;
 using GameServer.Unit.Tests.Collections;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -52,30 +53,28 @@ public sealed class ReplayTest
         return clone;
     }
 
-    private static void AssertWorldsEqual(World expected, World actual, long expectedTick, long actualTick)
+    private static void AssertWorldsEqual(
+        WorldSnapshot expected,
+        WorldSnapshot actual,
+        long expectedTick,
+        long actualTick
+    )
     {
         actualTick.Should().Be(expectedTick);
         actual.Map.Width.Should().Be(expected.Map.Width);
         actual.Map.Height.Should().Be(expected.Map.Height);
 
-        var expectedEntities = expected.GetAll().OrderBy(e => e.Id.Value).ToList();
-        var actualEntities = actual.GetAll().OrderBy(e => e.Id.Value).ToList();
+        var expectedEntities = expected.Entities.OrderBy(e => e.Id.Value).ToList();
+        var actualEntities = actual.Entities.OrderBy(e => e.Id.Value).ToList();
 
         actualEntities.Count.Should().Be(expectedEntities.Count);
 
         for (var i = 0; i < expectedEntities.Count; i++)
         {
-            var e = expectedEntities[i];
-            var a = actualEntities[i];
+            var actualEntity = actualEntities[i];
+            var expectedEntity = expectedEntities[i];
 
-            a.Id.Should().Be(e.Id);
-            a.Kind.Should().Be(e.Kind);
-            a.TilePosition.Should().Be(e.TilePosition);
-            a.Health.Should().Be(e.Health);
-            a.MaxHealth.Should().Be(e.MaxHealth);
-            a.LifecycleState.Should().Be(e.LifecycleState);
-            a.NextMoveAllowedTick.Should().Be(e.NextMoveAllowedTick);
-            a.NextAttackAllowedTick.Should().Be(e.NextAttackAllowedTick);
+            actualEntity.Should().BeEquivalentTo(expectedEntity);
         }
     }
 
@@ -98,17 +97,20 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = CloneWorld(initialWorld);
-        var replay = new Replay(new RecordedRun(
-            liveSim.TickNumber,
-            seed,
-            replayWorld,
-            log
-        ));
+        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replay = new Replay(
+            new RecordedRun(
+                liveSim.TickNumber,
+                seed,
+                replayWorld,
+                log
+            )
+        );
 
-        var finalReplayWorld = replay.ReplayRecordedRun();
+        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSim.World, finalReplayWorld, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
     }
 
     [Fact]
@@ -141,17 +143,20 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = CloneWorld(initialWorld);
-        var replay = new Replay(new RecordedRun(
-            liveSim.TickNumber,
-            seed,
-            replayWorld,
-            log
-        ));
+        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replay = new Replay(
+            new RecordedRun(
+                liveSim.TickNumber,
+                seed,
+                replayWorld,
+                log
+            )
+        );
 
-        var finalReplayWorld = replay.ReplayRecordedRun();
+        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSim.World, finalReplayWorld, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
     }
 
     [Fact]
@@ -216,16 +221,19 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = CloneWorld(initialWorld);
-        var replay = new Replay(new RecordedRun(
-            liveSim.TickNumber,
-            seed,
-            replayWorld,
-            log
-        ));
+        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replay = new Replay(
+            new RecordedRun(
+                liveSim.TickNumber,
+                seed,
+                replayWorld,
+                log
+            )
+        );
 
-        var finalReplayWorld = replay.ReplayRecordedRun();
+        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSim.World, finalReplayWorld, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
     }
 }

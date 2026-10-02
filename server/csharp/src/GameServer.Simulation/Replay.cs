@@ -1,4 +1,5 @@
 using GameServer.Simulation.Commands;
+using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Simulation;
 
@@ -7,9 +8,10 @@ public sealed class Replay(RecordedRun run)
     public RecordedRun Run { get; } = run;
     private Simulation? _simulation;
 
-    public World ReplayRecordedRun()
+    public WorldSnapshot ReplayRecordedRun()
     {
-        _simulation = new Simulation(Run.World, Run.Seed);
+        var world = World.CreateFromSnapshot(Run.World);
+        _simulation = new Simulation(world, Run.Seed);
 
         for (long tick = 0; tick <= Run.LastTick; tick++)
         {
@@ -23,13 +25,15 @@ public sealed class Replay(RecordedRun run)
             _simulation.Tick();
         }
 
-        return _simulation.World;
+        var worldSnapshot = Snapshot.CreateWorldSnapshot(world);
+
+        return worldSnapshot;
     }
 }
 
 public sealed record RecordedRun(
     long LastTick,
     int Seed,
-    World World,
+    WorldSnapshot World,
     IReadOnlyList<CommandLogEntry> Log
 );
