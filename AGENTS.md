@@ -43,3 +43,10 @@ These are project rules, not style preferences — breaking them silently breaks
 - **Tile coordinates are `int`**, never `float`/`Vector2`.
 - **`GameServer.Simulation` has zero package references** — no rendering or networking deps, ever. If `dotnet build` needs a graphics stack, the boundary is broken.
 - **Changing AI changes replays.** Adding/removing/reordering NPCs or any RNG draw (e.g. `WanderChance`) rewrites every subsequent RNG draw, so recorded runs only replay against identical simulation code. The seed is not the only knob.
+
+## Repository Rules and Patterns
+
+### Comments
+
+- Don't leave comments to the code unless they add **REAL** value;
+- **NEVER** leave comments on tests. Tests should have self explanatory names. Comments should be irrelevant;
