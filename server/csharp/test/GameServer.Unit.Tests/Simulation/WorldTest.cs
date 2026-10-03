@@ -6,8 +6,6 @@ namespace GameServer.Unit.Tests.Simulation;
 
 public sealed class WorldTest
 {
-    private readonly Faker _faker = new();
-
     [Fact]
     public void GivenWorld_WhenCreatingWorld_InitializesCorrectly()
     {
@@ -29,7 +27,7 @@ public sealed class WorldTest
         // Arrange
         var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
-        var tilePosition = new TilePosition(_faker.Random.Int(1, 18), _faker.Random.Int(1, 18));
+        var tilePosition = new TilePosition(7, 13);
 
         // Act
         var playerId = world.SpawnPlayer(tilePosition);
@@ -48,7 +46,7 @@ public sealed class WorldTest
         // Arrange
         var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
         var world = new World(map);
-        var tilePosition = new TilePosition(_faker.Random.Int(10, 15), _faker.Random.Int(10, 15));
+        var tilePosition = new TilePosition(12, 11);
 
         // Act && Assert
         for (int i = 0; i < 5; i++)
@@ -84,7 +82,7 @@ public sealed class WorldTest
         var world = new World(map);
 
         // Act
-        var nonExistingEntity = world.GetEntity(new EntityId(_faker.Random.Int(0, 1000)));
+        var nonExistingEntity = world.GetEntity(new EntityId(500));
 
         // Assert
         nonExistingEntity.Should().BeNull();
