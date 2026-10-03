@@ -27,4 +27,4 @@ public sealed record EntitySnapshot(
             e.TicksUntilRemoval
         ));
     }
-};
+}

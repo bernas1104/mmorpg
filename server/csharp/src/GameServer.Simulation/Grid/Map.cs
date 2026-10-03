@@ -1,4 +1,6 @@
-﻿namespace GameServer.Simulation;
+﻿using System.Text;
+
+namespace GameServer.Simulation;
 
 public sealed class Map
 {
@@ -55,7 +57,7 @@ public sealed class Map
 
     public MapSnapshot ToSnapshot()
     {
-        var builder = new System.Text.StringBuilder(Height * (Width + 1));
+        var builder = new StringBuilder(Height * (Width + 1));
 
         for (var y = 0; y < Height; y++)
         {

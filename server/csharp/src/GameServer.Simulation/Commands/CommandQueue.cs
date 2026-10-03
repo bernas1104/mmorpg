@@ -19,4 +19,4 @@ public sealed class CommandQueue
 public sealed record QueuedCommand(Command Command, long Sequence)
 {
     public override string ToString() => Command.ToString();
-};
+}

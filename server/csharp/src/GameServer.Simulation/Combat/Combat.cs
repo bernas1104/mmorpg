@@ -3,7 +3,7 @@ namespace GameServer.Simulation;
 
 public static class Combat
 {
-    public const long AttackCooldownTicks = 40; // 2 seconds assuming 50ms per tick
+    public const int AttackCooldownTicks = 40; // 2 seconds assuming 50ms per tick
     public const int AttackDamage = 10;         // Damage dealt per attack - Development only
     public const int AttackRange = 1;           // Range within which an attack can hit - Development only
 

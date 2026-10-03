@@ -8,20 +8,17 @@ public sealed class Replay(RecordedRun run)
     {
         var world = World.CreateFromSnapshot(Run.InitialSnapshot);
         var simulation = new Simulation(world, Run.Seed);
+        var logByTick = Run.Log.ToLookup(entry => entry.Tick);
 
         for (long tick = 0; tick <= Run.LastTick; tick++)
         {
-            Run.Log
-                .Where(entry => entry.Tick == tick)
-                .ToList()
-                .ForEach(e => simulation.Enqueue(e.Command));
+            foreach (var entry in logByTick[tick])
+                simulation.Enqueue(entry.Command);
 
             simulation.Tick();
         }
 
-        var worldSnapshot = WorldSnapshot.Of(world);
-
-        return worldSnapshot;
+        return WorldSnapshot.Of(world);
     }
 }
 

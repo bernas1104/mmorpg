@@ -4,7 +4,7 @@ namespace GameServer.Simulation;
 public sealed class World(Map map)
 {
     public Map Map { get; } = map;
-    public int IdCounter { get; private set; } = 0;
+    public int IdCounter { get; private set; }
     private readonly Dictionary<EntityId, Entity> _entities = [];
 
     public EntityId SpawnPlayer(TilePosition position)
