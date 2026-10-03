@@ -1,52 +1,17 @@
 using AwesomeAssertions;
 
 using GameServer.Simulation;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
+using Simulation = GameServer.Simulation.Simulation;
+
 public sealed class ReplayTest
 {
-    private static World CreateEmptyWorld(int width = 20, int height = 20)
-    {
-        var mapRows = new string[height, width];
-        for (var y = 0; y < height; y++)
-        {
-            for (var x = 0; x < width; x++)
-            {
-                mapRows[y, x] = ".";
-            }
-        }
+    private static World CreateEmptyWorld(int width = 20, int height = 20) => TestWorlds.Empty(width, height);
 
-        return new World(Map.FromRows(mapRows));
-    }
-
-    private static World CloneWorld(World source)
-    {
-        var map = source.Map;
-        var mapRows = new string[map.Height, map.Width];
-        for (var y = 0; y < map.Height; y++)
-        {
-            for (var x = 0; x < map.Width; x++)
-            {
-                mapRows[y, x] = map.IsWalkable(new TilePosition(x, y)) ? "." : "#";
-            }
-        }
-
-        var clone = new World(Map.FromRows(mapRows));
-        foreach (var entity in source.GetAll())
-        {
-            if (entity.Kind == EntityKind.Player)
-            {
-                clone.SpawnPlayer(entity.TilePosition);
-            }
-            else if (entity.Kind == EntityKind.Npc)
-            {
-                clone.SpawnNpc(entity.TilePosition);
-            }
-        }
-
-        return clone;
-    }
+    private static World CloneWorld(World source) => TestWorlds.Clone(source);
 
     private static void AssertWorldsEqual(
         WorldSnapshot expected,
@@ -60,7 +25,7 @@ public sealed class ReplayTest
     }
 
     [Fact]
-    public void Replay_WanderScenarioWithFixedSeed_ProducesIdenticalFinalState()
+    public void GivenARecordedWanderRun_WhenReplayed_ThenTheFinalStateIsIdentical()
     {
         const int seed = 12345;
         const int ticksToRun = 100;
@@ -70,7 +35,7 @@ public sealed class ReplayTest
         initialWorld.SpawnNpc(new TilePosition(5, 5));
 
         var liveWorld = CloneWorld(initialWorld);
-        var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);
+        var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
 
         for (var tick = 0; tick < ticksToRun; tick++)
@@ -95,7 +60,7 @@ public sealed class ReplayTest
     }
 
     [Fact]
-    public void Replay_CombatScenario_ProducesIdenticalFinalState()
+    public void GivenARecordedCombatRun_WhenReplayed_ThenTheFinalStateIsIdentical()
     {
         const int seed = 42;
         const int ticksToRun = 60;
@@ -105,7 +70,7 @@ public sealed class ReplayTest
         var target = initialWorld.SpawnNpc(new TilePosition(6, 5));
 
         var liveWorld = CloneWorld(initialWorld);
-        var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);
+        var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
 
         for (var tick = 0; tick < ticksToRun; tick++)
@@ -141,7 +106,7 @@ public sealed class ReplayTest
     }
 
     [Fact]
-    public void Replay_FuzzTestWithRandomValidCommands_ProducesIdenticalFinalState()
+    public void GivenAFuzzedRunOfValidCommands_WhenReplayed_ThenTheFinalStateIsIdentical()
     {
         const int seed = 999;
         const int ticksToRun = 50;
@@ -155,7 +120,7 @@ public sealed class ReplayTest
         initialWorld.SpawnNpc(new TilePosition(10, 10));
 
         var liveWorld = CloneWorld(initialWorld);
-        var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);
+        var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
         var rng = new Random(seed);
 

@@ -6,7 +6,7 @@ namespace GameServer.Unit.Tests.Simulation;
 public sealed class WorldTest
 {
     [Fact]
-    public void GivenWorld_WhenCreatingWorld_InitializesCorrectly()
+    public void GivenWorld_WhenCreatingWorld_ThenWorldInitializesCorrectly()
     {
         // Arrange
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
@@ -88,7 +88,7 @@ public sealed class WorldTest
     }
 
     [Fact]
-    public void GivenMixedEntities_WhenGettingAllAliveNPCs_ThenReturnsOnlyNpcsInAscendingIdOrder()
+    public void GivenMixedEntities_WhenGettingAllAliveNpcs_ThenReturnsOnlyNpcsInAscendingIdOrder()
     {
         // Arrange
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));

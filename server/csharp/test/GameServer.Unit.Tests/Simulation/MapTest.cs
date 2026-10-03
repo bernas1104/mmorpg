@@ -10,7 +10,7 @@ public sealed class MapTest
     [InlineData(1, -1)]
     [InlineData(0, 1)]
     [InlineData(1, 0)]
-    public void GivenInvalidMapDimensions_WhenCreatingMap_ThrowsArgumentOutOfRangeException(int width, int height)
+    public void GivenInvalidMapDimensions_WhenCreatingMap_ThenThrowsArgumentOutOfRangeException(int width, int height)
     {
         // Arrange & Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => Map.CreateEmpty(width, height));
@@ -20,7 +20,7 @@ public sealed class MapTest
     [InlineData(25, 1)]  // correct total length, wrong shape
     [InlineData(4, 1)]   // too small
     [InlineData(10, 10)] // too large
-    public void GivenTileGridNotMatchingMapDimensions_WhenCreatingMap_ThrowsArgumentException(
+    public void GivenTileGridNotMatchingMapDimensions_WhenCreatingMap_ThenThrowsArgumentException(
         int tileWidth,
         int tileHeight)
     {
@@ -71,7 +71,7 @@ public sealed class MapTest
     [Theory]
     [InlineData(".", "X")]
     [InlineData("X", ".")]
-    public void GivenInvalidTileCharacter_WhenCreatingMap_ThrowsArgumentException(
+    public void GivenInvalidTileCharacter_WhenCreatingMap_ThenThrowsArgumentException(
         string firstTile,
         string secondTile)
     {
@@ -113,7 +113,7 @@ public sealed class MapTest
     [InlineData(0, 0, false)]
     [InlineData(-1, 1, false)]
     [InlineData(1, -1, false)]
-    public void GivenMap_WhenVerifyTileWalkable_ReturnsExpectedResult(int x, int y, bool expected)
+    public void GivenMap_WhenQueryingWalkability_ThenReturnsExpectedResult(int x, int y, bool expected)
     {
         // Arrange
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
@@ -131,7 +131,7 @@ public sealed class MapTest
     [InlineData(0, -1, false)]
     [InlineData(20, 0, false)]
     [InlineData(0, 20, false)]
-    public void GivenMap_WhenVerifyTileWithinBounds_ReturnsExpectedResult(int x, int y, bool expected)
+    public void GivenMap_WhenQueryingBounds_ThenReturnsExpectedResult(int x, int y, bool expected)
     {
         // Arrange
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));

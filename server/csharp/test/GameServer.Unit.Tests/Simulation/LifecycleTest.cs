@@ -4,6 +4,8 @@ using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
+using Simulation = GameServer.Simulation.Simulation;
+
 public sealed class LifecycleTest
 {
     private const int Seed = 12345;
@@ -13,15 +15,6 @@ public sealed class LifecycleTest
     private static readonly TilePosition WandererSpawn = new(10, 10);
     private static readonly TilePosition FarCorpseSpawn = new(15, 15);
 
-    private static readonly string[,] SealedPairRows =
-    {
-        { "#", "#", "#", "#", "#" },
-        { "#", "#", ".", "#", "#" },
-        { "#", "#", ".", "#", "#" },
-        { "#", "#", "#", "#", "#" },
-        { "#", "#", "#", "#", "#" },
-    };
-
     private static readonly TilePosition SealedAttackerSpawn = new(2, 1);
     private static readonly TilePosition SealedTargetSpawn = new(2, 2);
 
@@ -30,7 +23,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         var target = world.GetEntity(targetId)!;
@@ -65,7 +58,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
@@ -124,7 +117,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var corpseId = world.SpawnNpc(OpenCorpseSpawn);
         var neighbourId = world.SpawnNpc(NeighbourSpawn);
         world.GetEntity(corpseId)!.TakeDamage(world.GetEntity(corpseId)!.Health);
@@ -146,7 +139,7 @@ public sealed class LifecycleTest
         foreach (var ticksBeforeDeath in new[] { 0, 1, 5, 50, 100, 500 })
         {
             var world = CreateSealedWorld();
-            var simulation = new GameServer.Simulation.Simulation(world, Seed);
+            var simulation = new Simulation(world, Seed);
             var targetId = world.SpawnNpc(SealedTargetSpawn);
             var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
             for (var i = 0; i < ticksBeforeDeath; i++) simulation.Tick();
@@ -182,7 +175,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
@@ -235,7 +228,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var firstId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
@@ -255,7 +248,7 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var corpses = new List<EntityId>();
         for (var x = 1; x <= 6; x++)
         {
@@ -293,9 +286,9 @@ public sealed class LifecycleTest
         );
     }
 
-    private static World CreateWorld() => new(Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20)));
+    private static World CreateWorld() => TestWorlds.Open();
 
-    private static World CreateSealedWorld() => new(Map.FromRows(SealedPairRows));
+    private static World CreateSealedWorld() => TestWorlds.SealedPair();
 
     private static int AttackTickBudget =>
         (Entity.DefaultMaxHealth / Combat.AttackDamage + 2) * (int)Combat.AttackCooldownTicks;
@@ -303,7 +296,7 @@ public sealed class LifecycleTest
     private static List<TilePosition> TraceWandererPath(bool withCorpse)
     {
         var world = CreateWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var simulation = new Simulation(world, Seed);
         var npcId = world.SpawnNpc(WandererSpawn);
 
         if (withCorpse)
@@ -327,7 +320,7 @@ public sealed class LifecycleTest
 
     private static long KillWithAttacks(
         World world,
-        GameServer.Simulation.Simulation simulation,
+        Simulation simulation,
         EntityId attackerId,
         EntityId targetId
     )

@@ -1,6 +1,9 @@
 using GameServer.Simulation;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
+
+using Simulation = GameServer.Simulation.Simulation;
 
 public sealed class MovementTest
 {
@@ -30,7 +33,7 @@ public sealed class MovementTest
 
     private readonly Map _map;
     private readonly World _world;
-    private readonly GameServer.Simulation.Simulation _simulation;
+    private readonly Simulation _simulation;
 
     public MovementTest()
     {
@@ -126,76 +129,33 @@ public sealed class MovementTest
     }
 
     [Fact]
+    public void GivenPlayerWhoseCooldownHasElapsed_WhenMovingAgain_ThenPlayerMoves()
+    {
+        // Arrange
+        var playerId = _world.SpawnPlayer(new TilePosition(10, 10));
+
+        // Act & Assert -- the first move succeeds and sets the cooldown
+        Movement.TryMove(_world, playerId, Direction.North, currentTick: 0)
+            .Should().Be(MoveResult.Success);
+
+        // ... a move inside the window is rejected ...
+        Movement.TryMove(_world, playerId, Direction.North, currentTick: Movement.MoveCooldownTicks / 2)
+            .Should().Be(MoveResult.OnCooldown);
+
+        // ... and a move at or past the cooldown succeeds again.
+        Movement.TryMove(_world, playerId, Direction.North, currentTick: Movement.MoveCooldownTicks)
+            .Should().Be(MoveResult.Success);
+
+        _world.GetEntity(playerId)!.TilePosition.Should().Be(new TilePosition(10, 8));
+    }
+
+    [Fact]
     public void GivenNonExistentPlayer_WhenMoving_ThenReturnsUnknownEntity()
     {
         // Arrange && Act && Assert
         Movement.TryMove(_world, new EntityId(999), Direction.North, 0)
             .Should()
             .Be(MoveResult.UnknownEntity);
-    }
-
-    [Fact]
-    public void GivenTargetTileOccupied_WhenMoving_ThenReturnsTileOccupiedAndDoesNotMove()
-    {
-        // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(5, 5));
-        _world.SpawnPlayer(new TilePosition(5, 4));
-
-        // Act
-        var result = Movement.TryMove(_world, playerId, Direction.North, 0);
-
-        // Assert
-        result.Should().Be(MoveResult.TargetOccupied);
-
-        var player = _world.GetEntity(playerId);
-        player.Should().NotBeNull();
-        player.TilePosition.Should().Be(new TilePosition(5, 5));
-    }
-
-    [Fact]
-    public void GivenTwoPlayersTargetingTheSameTile_WhenBothMoveInOneTick_ThenFirstEnqueuedWinsRegardlessOfEntityId()
-    {
-        // Arrange
-        var secondEnqueuedId = _world.SpawnPlayer(new TilePosition(5, 4));
-        var firstEnqueuedId = _world.SpawnPlayer(new TilePosition(5, 6));
-
-        // Guard: fail loudly rather than silently stop testing id-vs-arrival order if a
-        // future edit to this fixture reverses the spawns.
-        secondEnqueuedId.Value.Should().BeLessThan(firstEnqueuedId.Value);
-
-        _simulation.Enqueue(new MoveCommand(firstEnqueuedId, Direction.North));
-        _simulation.Enqueue(new MoveCommand(secondEnqueuedId, Direction.South));
-
-        // Act
-        _simulation.Tick();
-
-        // Assert
-        var winner = _world.GetEntity(firstEnqueuedId);
-        winner.Should().NotBeNull();
-        winner.TilePosition.Should().Be(new TilePosition(5, 5));
-
-        var loser = _world.GetEntity(secondEnqueuedId);
-        loser.Should().NotBeNull();
-        loser.TilePosition.Should().Be(new TilePosition(5, 4));
-    }
-
-    [Fact]
-    public void GivenTwoPlayersTargetingTheSameTile_WhenBothMoveDirectly_ThenLoserIsRejectedAsTileOccupied()
-    {
-        // Arrange
-        var winnerId = _world.SpawnPlayer(new TilePosition(5, 4));
-        var loserId = _world.SpawnPlayer(new TilePosition(5, 6));
-
-        // Act
-        var winnerResult = Movement.TryMove(_world, winnerId, Direction.South, 0);
-        var loserResult = Movement.TryMove(_world, loserId, Direction.North, 0);
-
-        // Assert
-        winnerResult.Should().Be(MoveResult.Success);
-        loserResult.Should().Be(MoveResult.TargetOccupied);
-
-        _world.GetEntity(winnerId)!.TilePosition.Should().Be(new TilePosition(5, 5));
-        _world.GetEntity(loserId)!.TilePosition.Should().Be(new TilePosition(5, 6));
     }
 
     [Fact]

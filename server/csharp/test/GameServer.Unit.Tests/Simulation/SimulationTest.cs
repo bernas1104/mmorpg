@@ -3,10 +3,12 @@ using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
+using Simulation = GameServer.Simulation.Simulation;
+
 public sealed class SimulationTest
 {
     [Fact]
-    public void GivenSimulation_WhenTick_ThenAdvancesSimulation()
+    public void GivenSimulation_WhenTickedTenTimes_ThenTheTickNumberAdvancesToTen()
     {
         // Arrange
         var simulation = CreateSimulation();
@@ -19,7 +21,7 @@ public sealed class SimulationTest
     }
 
     [Fact]
-    public void GivenQueuedCommand_WhenTickRunsTwice_ThenCommandIsProcessedOnlyOnce()
+    public void GivenQueuedCommand_WhenTickedTwice_ThenTheCommandIsProcessedOnlyOnce()
     {
         // Arrange
         var test = CreateTestSimulation();
@@ -36,7 +38,7 @@ public sealed class SimulationTest
     }
 
     [Fact]
-    public void GivenCommandEnqueuedAfterATick_ThenItIsNotProcessedUntilTheNextTick()
+    public void GivenACommandEnqueuedAfterATick_WhenTicked_ThenItIsProcessedOnTheNextTick()
     {
         // Arrange
         var test = CreateTestSimulation();
@@ -56,7 +58,7 @@ public sealed class SimulationTest
     }
 
     [Fact]
-    public void GivenMultipleQueuedCommands_WhenTickRuns_ThenTheyAreProcessedInEnqueueOrder()
+    public void GivenMultipleQueuedCommands_WhenTicked_ThenTheyAreProcessedInEnqueueOrder()
     {
         // Arrange
         var test = CreateTestSimulation();
@@ -104,7 +106,7 @@ public sealed class SimulationTest
         world.GetEntity(npcId)!.Health.Should().Be(Entity.DefaultMaxHealth - Combat.AttackDamage);
     }
 
-    private static GameServer.Simulation.Simulation CreateSimulation()
+    private static Simulation CreateSimulation()
         => new(new World(Map.CreateEmpty(8, 8)), 1);
 
     private static TestSimulation CreateTestSimulation()

@@ -1,27 +1,19 @@
 using GameServer.Simulation;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
+using Simulation = GameServer.Simulation.Simulation;
+
 public sealed class CombatTest
 {
-    private readonly string[,] _mapRows = new string[,]
-    {
-        { ".", ".", ".", ".", "." },
-        { ".", ".", ".", ".", "." },
-        { ".", ".", ".", ".", "." },
-        { ".", ".", ".", ".", "." },
-        { ".", ".", ".", ".", "." }
-    };
-
-    private readonly Map _map;
     private readonly World _world;
-    private readonly GameServer.Simulation.Simulation _simulation;
+    private readonly Simulation _simulation;
 
     public CombatTest()
     {
-        _map = Map.FromRows(_mapRows);
-        _world = new World(_map);
-        _simulation = new GameServer.Simulation.Simulation(_world, 12345);
+        _world = TestWorlds.Empty(5, 5);
+        _simulation = new Simulation(_world, 12345);
     }
 
     [Fact]

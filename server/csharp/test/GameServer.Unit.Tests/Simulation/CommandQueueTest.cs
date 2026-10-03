@@ -1,11 +1,11 @@
 using GameServer.Simulation;
 
-namespace GameServer.Unit.Tests.Simulation.Commands;
+namespace GameServer.Unit.Tests.Simulation;
 
 public sealed class CommandQueueTest
 {
     [Fact]
-    public void GivenEnqueue_ThenAddCommandToQueue()
+    public void GivenACommand_WhenEnqueued_ThenItIsQueued()
     {
         // Arrange
         var queue = new CommandQueue();
@@ -21,7 +21,7 @@ public sealed class CommandQueueTest
     }
 
     [Fact]
-    public void GivenDrain_ThenReturnAllCommandsAndClearQueue()
+    public void GivenQueuedCommands_WhenDrained_ThenAllAreReturnedAndTheQueueClears()
     {
         // Arrange
         var queue = new CommandQueue();
