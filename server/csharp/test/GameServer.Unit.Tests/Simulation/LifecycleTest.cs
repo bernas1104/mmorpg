@@ -1,7 +1,7 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
-using GameServer.Unit.Tests.Mocks;
+
 using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -295,7 +295,7 @@ public sealed class LifecycleTest
         );
     }
 
-    private static World CreateWorld() => new(Map.FromRows(TileMock.GetWallBoundedTiles(20, 20)));
+    private static World CreateWorld() => new(Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20)));
 
     private static World CreateSealedWorld() => new(Map.FromRows(SealedPairRows));
 

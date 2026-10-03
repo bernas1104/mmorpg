@@ -1,5 +1,5 @@
 using GameServer.Simulation;
-using GameServer.Unit.Tests.Mocks;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
@@ -89,6 +89,25 @@ public sealed class MapTest
         exception.Message.Should().Contain("Invalid tile character: X");
     }
 
+    [Fact]
+    public void GivenWallBoundedTestMap_WhenNonSquare_ThenWallsBoundTheRequestedDimensions()
+    {
+        // Arrange
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(5, 3));
+
+        // Assert
+        map.Width.Should().Be(5);
+        map.Height.Should().Be(3);
+
+        map.IsWalkable(new TilePosition(0, 1)).Should().BeFalse();
+        map.IsWalkable(new TilePosition(4, 1)).Should().BeFalse();
+        map.IsWalkable(new TilePosition(1, 0)).Should().BeFalse();
+        map.IsWalkable(new TilePosition(3, 2)).Should().BeFalse();
+
+        map.IsWalkable(new TilePosition(1, 1)).Should().BeTrue();
+        map.IsWalkable(new TilePosition(3, 1)).Should().BeTrue();
+    }
+
     [Theory]
     [InlineData(1, 1, true)]
     [InlineData(0, 0, false)]
@@ -97,7 +116,7 @@ public sealed class MapTest
     public void GivenMap_WhenVerifyTileWalkable_ReturnsExpectedResult(int x, int y, bool expected)
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
 
         // Act
         var result = map.IsWalkable(new TilePosition(x, y));
@@ -115,7 +134,7 @@ public sealed class MapTest
     public void GivenMap_WhenVerifyTileWithinBounds_ReturnsExpectedResult(int x, int y, bool expected)
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
 
         // Act
         var result = map.IsInBounds(new TilePosition(x, y));

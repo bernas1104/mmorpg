@@ -1,7 +1,7 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
-using GameServer.Unit.Tests.Mocks;
+
 using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
@@ -333,7 +333,7 @@ public sealed class AiTest
         );
     }
 
-    private static World CreateOpenWorld() => new(Map.FromRows(TileMock.GetWallBoundedTiles(20, 20)));
+    private static World CreateOpenWorld() => new(Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20)));
 
     private static World CreateSingleCorridorWorld() => new(Map.FromRows(SingleCorridorRows));
 

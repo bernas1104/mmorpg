@@ -1,6 +1,6 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Enums;
-using GameServer.Unit.Tests.Mocks;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
@@ -10,7 +10,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenCreatingWorld_InitializesCorrectly()
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
 
         // Act
         var world = new World(map);
@@ -25,7 +25,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenAddingPlayerInValidPosition_ThenPlayerIsAddedCorrectly()
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
         var tilePosition = new TilePosition(7, 13);
 
@@ -44,7 +44,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenSpawningMultiplePlayers_ThenEntityIdsIncrementCorrectly()
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
         var tilePosition = new TilePosition(12, 11);
 
@@ -66,7 +66,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenAddingPlayerInInvalidPosition_ThenThrowsArgumentOutOfRangeException(int x, int y)
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
         var invalidTilePosition = new TilePosition(x, y);
 
@@ -78,7 +78,7 @@ public sealed class WorldTest
     public void GivenWorld_WhenGettingNonExistingEntity_ThenReturnsNull()
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
 
         // Act
@@ -92,7 +92,7 @@ public sealed class WorldTest
     public void GivenMixedEntities_WhenGettingAllAliveNPCs_ThenReturnsOnlyNpcsInAscendingIdOrder()
     {
         // Arrange
-        var map = Map.FromRows(TileMock.GetWallBoundedTiles(20, 20));
+        var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
 
         world.SpawnNPC(new TilePosition(3, 3));
