@@ -1,9 +1,6 @@
 using AwesomeAssertions;
 
 using GameServer.Simulation;
-using GameServer.Simulation.Commands;
-using GameServer.Simulation.Enums;
-using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Unit.Tests.Simulation;
 
@@ -95,7 +92,7 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replayWorld = WorldSnapshot.Of(initialWorld);
         var replay = new Replay(
             new RecordedRun(
                 liveSim.TickNumber,
@@ -105,7 +102,7 @@ public sealed class ReplayTest
             )
         );
 
-        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
         AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
@@ -141,7 +138,7 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replayWorld = WorldSnapshot.Of(initialWorld);
         var replay = new Replay(
             new RecordedRun(
                 liveSim.TickNumber,
@@ -151,7 +148,7 @@ public sealed class ReplayTest
             )
         );
 
-        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
         AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
@@ -219,7 +216,7 @@ public sealed class ReplayTest
             liveSim.Tick();
         }
 
-        var replayWorld = Snapshot.CreateWorldSnapshot(initialWorld);
+        var replayWorld = WorldSnapshot.Of(initialWorld);
         var replay = new Replay(
             new RecordedRun(
                 liveSim.TickNumber,
@@ -229,7 +226,7 @@ public sealed class ReplayTest
             )
         );
 
-        var liveSimWorldSnapshot = Snapshot.CreateWorldSnapshot(liveSim.World);
+        var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
         AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);

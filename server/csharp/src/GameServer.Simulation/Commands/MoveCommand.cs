@@ -1,6 +1,5 @@
-using GameServer.Simulation.Enums;
 
-namespace GameServer.Simulation.Commands;
+namespace GameServer.Simulation;
 
 public sealed record MoveCommand(EntityId EntityId, Direction Direction)
     : Command(EntityId, CommandKind.Move)

@@ -1,6 +1,5 @@
-using GameServer.Simulation.Enums;
 
-namespace GameServer.Simulation.Snapshots;
+namespace GameServer.Simulation;
 
 public sealed record EntitySnapshot(
     EntityId Id,

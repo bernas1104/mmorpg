@@ -1,6 +1,4 @@
 using GameServer.Simulation;
-using GameServer.Simulation.Commands;
-using GameServer.Simulation.Enums;
 
 namespace GameServer.Unit.Tests.Simulation;
 

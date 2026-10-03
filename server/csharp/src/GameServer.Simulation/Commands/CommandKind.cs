@@ -1,4 +1,4 @@
-namespace GameServer.Simulation.Enums;
+namespace GameServer.Simulation;
 
 /// <summary>
 /// Which resolution phase a <see cref="Commands.Command"/> belongs to. Used as the primary sort

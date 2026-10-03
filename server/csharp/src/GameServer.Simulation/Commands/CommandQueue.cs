@@ -1,4 +1,4 @@
-namespace GameServer.Simulation.Commands;
+namespace GameServer.Simulation;
 
 public sealed class CommandQueue
 {

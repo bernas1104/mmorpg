@@ -1,6 +1,5 @@
-using GameServer.Simulation.Enums;
 
-namespace GameServer.Simulation.Commands;
+namespace GameServer.Simulation;
 
 public sealed record AttackCommand(EntityId AttackerId, EntityId TargetId)
     : Command(AttackerId, CommandKind.Attack)

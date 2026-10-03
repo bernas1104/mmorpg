@@ -1,5 +1,3 @@
-using GameServer.Simulation.Enums;
-using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Simulation;
 

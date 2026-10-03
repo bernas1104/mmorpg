@@ -1,4 +1,4 @@
-namespace GameServer.Simulation.Extensions;
+namespace GameServer.Simulation;
 
 public static class DirectionExtensions
 {

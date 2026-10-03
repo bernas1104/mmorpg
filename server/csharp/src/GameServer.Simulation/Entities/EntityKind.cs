@@ -1,4 +1,4 @@
-namespace GameServer.Simulation.Enums;
+namespace GameServer.Simulation;
 
 public enum EntityKind
 {

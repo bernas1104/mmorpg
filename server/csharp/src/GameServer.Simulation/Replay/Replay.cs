@@ -1,5 +1,3 @@
-using GameServer.Simulation.Commands;
-using GameServer.Simulation.Snapshots;
 
 namespace GameServer.Simulation;
 
@@ -22,7 +20,7 @@ public sealed class Replay(RecordedRun run)
             simulation.Tick();
         }
 
-        var worldSnapshot = Snapshot.CreateWorldSnapshot(world);
+        var worldSnapshot = WorldSnapshot.Of(world);
 
         return worldSnapshot;
     }

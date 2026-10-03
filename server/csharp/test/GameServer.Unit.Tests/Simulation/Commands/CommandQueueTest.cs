@@ -1,5 +1,4 @@
 using GameServer.Simulation;
-using GameServer.Simulation.Commands;
 
 namespace GameServer.Unit.Tests.Simulation.Commands;
 

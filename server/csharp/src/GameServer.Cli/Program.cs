@@ -2,10 +2,6 @@
 using System.Runtime.InteropServices;
 
 using GameServer.Simulation;
-using GameServer.Simulation.Commands;
-using GameServer.Simulation.Constants;
-using GameServer.Simulation.Enums;
-using GameServer.Simulation.Snapshots;
 
 string[,] mapRows = new string[,]
     {
@@ -118,7 +114,7 @@ simulation.World.SpawnPlayer(new TilePosition(2, 4));
 simulation.World.SpawnNPC(new TilePosition(9, 9));
 simulation.World.SpawnNPC(new TilePosition(10, 10));
 
-var worldSnapshot = Snapshot.CreateWorldSnapshot(simulation.World);
+var worldSnapshot = WorldSnapshot.Of(simulation.World);
 
 List<CommandLogEntry> commandLog = [];
 
@@ -181,7 +177,7 @@ void CommandParser(string? input)
             return;
         case "snapshot":
         case "dump":
-            var snapshot = Snapshot.CreateWorldSnapshot(simulation.World);
+            var snapshot = WorldSnapshot.Of(simulation.World);
             Console.WriteLine($"--- Snapshot @ Tick {simulation.TickNumber} ---");
             Console.WriteLine($"Map: {snapshot.Map.Width}x{snapshot.Map.Height}, IdCounter: {snapshot.IdCounter}");
             Console.WriteLine($"Entities ({snapshot.Entities.Count()}):");

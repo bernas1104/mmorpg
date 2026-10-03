@@ -53,8 +53,3 @@ public sealed class Map
 
     public static Map FromTiles(int width, int height, Tile[,] tiles) => new(width, height, tiles);
 }
-
-public readonly struct Tile(bool walkable)
-{
-    public readonly bool Walkable { get; } = walkable;
-}

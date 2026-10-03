@@ -1,4 +1,4 @@
-namespace GameServer.Simulation.Constants;
+namespace GameServer.Simulation;
 
 public static class SimulationConstants
 {
