@@ -187,7 +187,7 @@ void CommandParser(string? input)
                     $"  [{entity.Id.Value}] {entity.Kind} @ ({entity.TilePosition.X},{entity.TilePosition.Y}) | " +
                     $"HP: {entity.Health}/{entity.MaxHealth} | State: {entity.LifecycleState} | " +
                     $"NextMove: {entity.NextMoveAllowedTick} | NextAttack: {entity.NextAttackAllowedTick}" +
-                    (entity.RemovalTick.HasValue ? $" | RemovalTick: {entity.RemovalTick.Value}" : string.Empty)
+                    (entity.TicksUntilRemoval.HasValue ? $" | TicksUntilRemoval: {entity.TicksUntilRemoval.Value}" : string.Empty)
                 );
             }
 

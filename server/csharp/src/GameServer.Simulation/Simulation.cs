@@ -106,7 +106,7 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
         }
 
         foreach (var deadEntity in World.GetAllDead())
-            deadEntity.DecrementRemovalTick();
+            deadEntity.DecrementTicksUntilRemoval();
 
         World.RemoveExpiredCorpses();
 

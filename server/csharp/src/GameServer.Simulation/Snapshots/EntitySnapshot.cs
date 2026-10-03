@@ -10,7 +10,7 @@ public sealed record EntitySnapshot(
     int Health,
     long NextAttackAllowedTick,
     LifecycleState LifecycleState,
-    long? RemovalTick
+    long? TicksUntilRemoval
 )
 {
     public static IEnumerable<EntitySnapshot> FromEntities(IEnumerable<Entity> entities)
@@ -24,7 +24,7 @@ public sealed record EntitySnapshot(
             e.Health,
             e.NextAttackAllowedTick,
             e.LifecycleState,
-            e.RemovalTick
+            e.TicksUntilRemoval
         ));
     }
 };

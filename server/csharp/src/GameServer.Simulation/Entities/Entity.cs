@@ -1,20 +1,19 @@
-
 namespace GameServer.Simulation;
 
 public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePosition)
 {
-    public static int DefaultMaxHealth { get; } = 100;      // Default max health - Development only
-    public static long DefaultRemovalTicks { get; } = 100;  // Default removal tick - Development only
+    public const int DefaultMaxHealth = 100;
+    public const long DefaultCorpseWindowTicks = 100;
 
     public EntityId Id { get; } = id;
     public EntityKind Kind { get; } = kind;
     public TilePosition TilePosition { get; private set; } = tilePosition;
-    public long NextMoveAllowedTick { get; private set; } = 0;
+    public long NextMoveAllowedTick { get; private set; }
     public int MaxHealth { get; } = DefaultMaxHealth;
     public int Health { get; private set; } = DefaultMaxHealth;
-    public long NextAttackAllowedTick { get; private set; } = 0;
+    public long NextAttackAllowedTick { get; private set; }
     public LifecycleState LifecycleState { get; private set; } = LifecycleState.Alive;
-    public long? RemovalTick { get; private set; } = null;
+    public long? TicksUntilRemoval { get; private set; }
 
     public void UpdateNextMoveAllowedTick(long nextMoveAllowedTick)
     {
@@ -34,7 +33,7 @@ public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePositi
         if (Health == 0)
         {
             LifecycleState = LifecycleState.Dead;
-            RemovalTick ??= DefaultRemovalTicks;
+            TicksUntilRemoval ??= DefaultCorpseWindowTicks;
         }
     }
 
@@ -44,13 +43,13 @@ public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePositi
         NextAttackAllowedTick = nextAttackAllowedTick;
     }
 
-    public void DecrementRemovalTick()
+    public void DecrementTicksUntilRemoval()
     {
-        if (!RemovalTick.HasValue || RemovalTick <= 0) return;
+        if (!TicksUntilRemoval.HasValue || TicksUntilRemoval <= 0) return;
 
-        RemovalTick--;
+        TicksUntilRemoval--;
 
-        if (RemovalTick == 0) LifecycleState = LifecycleState.Removed;
+        if (TicksUntilRemoval == 0) LifecycleState = LifecycleState.Removed;
     }
 
     public static Entity CreateFromSnapshot(EntitySnapshot snapshot)
@@ -65,7 +64,7 @@ public sealed class Entity(EntityId id, EntityKind kind, TilePosition tilePositi
         entity.Health = snapshot.Health;
         entity.NextAttackAllowedTick = snapshot.NextAttackAllowedTick;
         entity.LifecycleState = snapshot.LifecycleState;
-        entity.RemovalTick = snapshot.RemovalTick;
+        entity.TicksUntilRemoval = snapshot.TicksUntilRemoval;
 
         return entity;
     }

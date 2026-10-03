@@ -153,7 +153,7 @@ public sealed class LifecycleTest
             KillWithAttacks(world, simulation, attackerId, targetId);
 
             var ticksSurvived = 0;
-            while (world.GetEntity(targetId) is not null && ticksSurvived < Entity.DefaultRemovalTicks * 2)
+            while (world.GetEntity(targetId) is not null && ticksSurvived < Entity.DefaultCorpseWindowTicks * 2)
             {
                 simulation.Tick();
                 ticksSurvived++;
@@ -171,9 +171,9 @@ public sealed class LifecycleTest
         );
 
         survivors[0].Should().BeInRange(
-            (int)Entity.DefaultRemovalTicks - 1,
-            (int)Entity.DefaultRemovalTicks,
-            "the corpse window should last about DefaultRemovalTicks ticks"
+            (int)Entity.DefaultCorpseWindowTicks - 1,
+            (int)Entity.DefaultCorpseWindowTicks,
+            "the corpse window should last about DefaultCorpseWindowTicks ticks"
         );
     }
 
@@ -187,13 +187,13 @@ public sealed class LifecycleTest
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
         var corpse = world.GetEntity(targetId)!;
-        var windowAtDeath = corpse.RemovalTick;
+        var windowAtDeath = corpse.TicksUntilRemoval;
 
         // Act
         for (var i = 0; i < 40; i++) simulation.Tick();
-        var windowBeforeSecondHit = corpse.RemovalTick;
+        var windowBeforeSecondHit = corpse.TicksUntilRemoval;
         corpse.TakeDamage(1);
-        var windowAfterSecondHit = corpse.RemovalTick;
+        var windowAfterSecondHit = corpse.TicksUntilRemoval;
 
         // Assert
         windowBeforeSecondHit.Should().Be(windowAtDeath - 40, "the window counts down while the corpse lies there");
@@ -213,7 +213,7 @@ public sealed class LifecycleTest
         var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
-        test.Tick((int)Entity.DefaultRemovalTicks);
+        test.Tick((int)Entity.DefaultCorpseWindowTicks);
 
         // Assert
         world.GetEntity(targetId).Should().BeNull();
@@ -239,7 +239,7 @@ public sealed class LifecycleTest
         var firstId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
-        for (var i = 0; i < (int)Entity.DefaultRemovalTicks; i++) simulation.Tick();
+        for (var i = 0; i < (int)Entity.DefaultCorpseWindowTicks; i++) simulation.Tick();
 
         // Act
         var secondId = world.SpawnNpc(SealedTargetSpawn);
@@ -266,12 +266,12 @@ public sealed class LifecycleTest
         }
 
         // Assert
-        for (var i = 0; i < (int)Entity.DefaultRemovalTicks / 2; i++) simulation.Tick();
+        for (var i = 0; i < (int)Entity.DefaultCorpseWindowTicks / 2; i++) simulation.Tick();
         foreach (var id in corpses)
             world.GetEntity(id).Should().NotBeNull($"corpse {id} vanished before its window ended");
 
         // Act
-        for (var i = 0; i < (int)Entity.DefaultRemovalTicks; i++) simulation.Tick();
+        for (var i = 0; i < (int)Entity.DefaultCorpseWindowTicks; i++) simulation.Tick();
 
         // Assert
         foreach (var id in corpses)
