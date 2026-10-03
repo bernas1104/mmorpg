@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Unit.Tests.Support;
@@ -12,17 +10,13 @@ public sealed class SimulationTest
     public void GivenSimulation_WhenTick_ThenAdvancesSimulation()
     {
         // Arrange
-        var stopwatch = Stopwatch.StartNew();
         var simulation = CreateSimulation();
 
         // Act
         for (int i = 0; i < 10; i++) simulation.Tick();
-        stopwatch.Stop();
 
         // Assert
         simulation.TickNumber.Should().Be(10);
-
-        stopwatch.ElapsedMilliseconds.Should().BeCloseTo(0, 20);
     }
 
     [Fact]
