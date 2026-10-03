@@ -39,9 +39,9 @@ public sealed class ReplayTest
             {
                 clone.SpawnPlayer(entity.TilePosition);
             }
-            else if (entity.Kind == EntityKind.NPC)
+            else if (entity.Kind == EntityKind.Npc)
             {
-                clone.SpawnNPC(entity.TilePosition);
+                clone.SpawnNpc(entity.TilePosition);
             }
         }
 
@@ -81,7 +81,7 @@ public sealed class ReplayTest
 
         var initialWorld = CreateEmptyWorld();
         initialWorld.SpawnPlayer(new TilePosition(10, 10));
-        initialWorld.SpawnNPC(new TilePosition(5, 5));
+        initialWorld.SpawnNpc(new TilePosition(5, 5));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);
@@ -116,7 +116,7 @@ public sealed class ReplayTest
 
         var initialWorld = CreateEmptyWorld();
         var attacker = initialWorld.SpawnPlayer(new TilePosition(5, 5));
-        var target = initialWorld.SpawnNPC(new TilePosition(6, 5));
+        var target = initialWorld.SpawnNpc(new TilePosition(6, 5));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);
@@ -164,9 +164,9 @@ public sealed class ReplayTest
         var initialWorld = CreateEmptyWorld();
         initialWorld.SpawnPlayer(new TilePosition(1, 1));
         initialWorld.SpawnPlayer(new TilePosition(18, 1));
-        initialWorld.SpawnNPC(new TilePosition(1, 18));
-        initialWorld.SpawnNPC(new TilePosition(18, 18));
-        initialWorld.SpawnNPC(new TilePosition(10, 10));
+        initialWorld.SpawnNpc(new TilePosition(1, 18));
+        initialWorld.SpawnNpc(new TilePosition(18, 18));
+        initialWorld.SpawnNpc(new TilePosition(10, 10));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new GameServer.Simulation.Simulation(liveWorld, seed);

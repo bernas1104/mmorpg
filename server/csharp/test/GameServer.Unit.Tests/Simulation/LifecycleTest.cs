@@ -31,7 +31,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         var target = world.GetEntity(targetId)!;
 
@@ -66,7 +66,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
 
@@ -86,7 +86,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
@@ -106,7 +106,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
@@ -125,8 +125,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var corpseId = world.SpawnNPC(OpenCorpseSpawn);
-        var neighbourId = world.SpawnNPC(NeighbourSpawn);
+        var corpseId = world.SpawnNpc(OpenCorpseSpawn);
+        var neighbourId = world.SpawnNpc(NeighbourSpawn);
         world.GetEntity(corpseId)!.TakeDamage(world.GetEntity(corpseId)!.Health);
 
         // Act
@@ -147,7 +147,7 @@ public sealed class LifecycleTest
         {
             var world = CreateSealedWorld();
             var simulation = new GameServer.Simulation.Simulation(world, Seed);
-            var targetId = world.SpawnNPC(SealedTargetSpawn);
+            var targetId = world.SpawnNpc(SealedTargetSpawn);
             var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
             for (var i = 0; i < ticksBeforeDeath; i++) simulation.Tick();
             KillWithAttacks(world, simulation, attackerId, targetId);
@@ -183,7 +183,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
         var corpse = world.GetEntity(targetId)!;
@@ -210,7 +210,7 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNPC(SealedTargetSpawn);
+        var targetId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
         test.Tick((int)Entity.DefaultRemovalTicks);
@@ -236,13 +236,13 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var firstId = world.SpawnNPC(SealedTargetSpawn);
+        var firstId = world.SpawnNpc(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
         for (var i = 0; i < (int)Entity.DefaultRemovalTicks; i++) simulation.Tick();
 
         // Act
-        var secondId = world.SpawnNPC(SealedTargetSpawn);
+        var secondId = world.SpawnNpc(SealedTargetSpawn);
 
         // Assert
         secondId.Value.Should().BeGreaterThan(firstId.Value);
@@ -259,7 +259,7 @@ public sealed class LifecycleTest
         var corpses = new List<EntityId>();
         for (var x = 1; x <= 6; x++)
         {
-            var id = world.SpawnNPC(new TilePosition(x, 5));
+            var id = world.SpawnNpc(new TilePosition(x, 5));
             var entity = world.GetEntity(id)!;
             entity.TakeDamage(entity.Health);
             corpses.Add(id);
@@ -304,11 +304,11 @@ public sealed class LifecycleTest
     {
         var world = CreateWorld();
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
-        var npcId = world.SpawnNPC(WandererSpawn);
+        var npcId = world.SpawnNpc(WandererSpawn);
 
         if (withCorpse)
         {
-            var corpseId = world.SpawnNPC(FarCorpseSpawn);
+            var corpseId = world.SpawnNpc(FarCorpseSpawn);
             var corpse = world.GetEntity(corpseId)!;
             corpse.TakeDamage(corpse.Health);
         }

@@ -5,7 +5,7 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
 {
     public World World { get; } = world;
     public long TickNumber { get; private set; } = default;
-    private readonly CommandQueue _pending = new();
+    private readonly CommandQueue _commandQueue = new();
     private readonly TextWriter? _log = log;
 
     /// <summary>
@@ -40,14 +40,14 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
         // It also fixes the order in which entities draw from the generator -- ascending id, via
         // World.GetAll -- which is what makes "same seed, same run" hold. See the tie-break note
         // below for what that costs.
-        foreach (var npc in World.GetAllAliveNPCs())
+        foreach (var npc in World.GetAliveNpcs())
         {
             var commands = Ai.Think(World, npc, Rng, TickNumber);
             foreach (var command in commands)
-                _pending.Enqueue(command);
+                _commandQueue.Enqueue(command);
         }
 
-        var batch = _pending.Drain();
+        var batch = _commandQueue.Drain();
 
         // APPLY -- deterministic, and the tie-break that falls out of it is worth knowing about.
         //
@@ -108,12 +108,12 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
         foreach (var deadEntity in World.GetAllDead())
             deadEntity.DecrementRemovalTick();
 
-        World.RemoveMarkedEntities();
+        World.RemoveExpiredCorpses();
 
         TickNumber++;
     }
 
-    public void Enqueue(Command command) => _pending.Enqueue(command);
+    public void Enqueue(Command command) => _commandQueue.Enqueue(command);
 
     private void ExecuteMovementCommand(MoveCommand moveCommand)
     {

@@ -23,7 +23,7 @@ public sealed class World(Map map)
         return id;
     }
 
-    public EntityId SpawnNPC(TilePosition position)
+    public EntityId SpawnNpc(TilePosition position)
     {
         if (!Map.IsWalkable(position))
             throw new ArgumentOutOfRangeException(
@@ -32,7 +32,7 @@ public sealed class World(Map map)
             );
 
         var id = new EntityId(IdCounter++);
-        var npc = new Entity(id, EntityKind.NPC, position);
+        var npc = new Entity(id, EntityKind.Npc, position);
 
         _entities[id] = npc;
 
@@ -60,7 +60,7 @@ public sealed class World(Map map)
 
     public IEnumerable<Entity> GetAll() => [.. _entities.Values.OrderBy(entity => entity.Id.Value)];
 
-    public IEnumerable<Entity> GetAllAliveNPCs() => GetAllOfKind(EntityKind.NPC)
+    public IEnumerable<Entity> GetAliveNpcs() => GetAllOfKind(EntityKind.Npc)
         .Where(entity => entity.LifecycleState == LifecycleState.Alive);
 
     public IEnumerable<Entity> GetAllDead() =>
@@ -75,7 +75,7 @@ public sealed class World(Map map)
                 && entity.LifecycleState == LifecycleState.Alive
         );
 
-    public void RemoveMarkedEntities()
+    public void RemoveExpiredCorpses()
     {
         foreach (var id in _entities.Values.ToArray()
             .Where(entity => entity.LifecycleState == LifecycleState.Removed)

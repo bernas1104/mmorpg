@@ -94,18 +94,18 @@ public sealed class WorldTest
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
 
-        world.SpawnNPC(new TilePosition(3, 3));
+        world.SpawnNpc(new TilePosition(3, 3));
         world.SpawnPlayer(new TilePosition(5, 5));
-        world.SpawnNPC(new TilePosition(7, 7));
+        world.SpawnNpc(new TilePosition(7, 7));
         world.SpawnPlayer(new TilePosition(9, 9));
-        world.SpawnNPC(new TilePosition(11, 11));
+        world.SpawnNpc(new TilePosition(11, 11));
 
         // Act
-        var npcs = world.GetAllAliveNPCs().ToList();
+        var npcs = world.GetAliveNpcs().ToList();
 
         // Assert
         npcs.Select(npc => npc.Id.Value).Should().Equal(0, 2, 4);
 
-        npcs.Select(npc => npc.Kind).Should().OnlyContain(kind => kind == EntityKind.NPC);
+        npcs.Select(npc => npc.Kind).Should().OnlyContain(kind => kind == EntityKind.Npc);
     }
 }

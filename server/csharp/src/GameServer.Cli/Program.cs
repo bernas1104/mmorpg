@@ -111,8 +111,8 @@ var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed, Console.
 simulation.World.SpawnPlayer(new TilePosition(4, 4));
 simulation.World.SpawnPlayer(new TilePosition(5, 5));
 simulation.World.SpawnPlayer(new TilePosition(2, 4));
-simulation.World.SpawnNPC(new TilePosition(9, 9));
-simulation.World.SpawnNPC(new TilePosition(10, 10));
+simulation.World.SpawnNpc(new TilePosition(9, 9));
+simulation.World.SpawnNpc(new TilePosition(10, 10));
 
 var worldSnapshot = WorldSnapshot.Of(simulation.World);
 

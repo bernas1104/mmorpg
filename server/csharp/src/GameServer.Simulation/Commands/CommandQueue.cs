@@ -2,16 +2,16 @@ namespace GameServer.Simulation;
 
 public sealed class CommandQueue
 {
-    private List<QueuedCommand> _pending = [];
+    private List<QueuedCommand> _commandQueue = [];
     private long _nextSequence = 0;
 
     public void Enqueue(Command command) =>
-        _pending.Add(new QueuedCommand(command, _nextSequence++));
+        _commandQueue.Add(new QueuedCommand(command, _nextSequence++));
 
     public IReadOnlyList<QueuedCommand> Drain()
     {
-        var batch = _pending;
-        _pending = [];
+        var batch = _commandQueue;
+        _commandQueue = [];
         return batch;
     }
 }

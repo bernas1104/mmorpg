@@ -38,7 +38,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateOpenWorld();
-        var npcId = world.SpawnNPC(SpawnPosition);
+        var npcId = world.SpawnNpc(SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         var simulation = new GameServer.Simulation.Simulation(world, Seed);
 
@@ -140,7 +140,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateOpenWorld();
-        var npcId = world.SpawnNPC(SpawnPosition);
+        var npcId = world.SpawnNpc(SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         npc.UpdateNextMoveAllowedTick(Movement.MoveCooldownTicks);
         var rng = new Rng(Seed);
@@ -157,7 +157,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateOpenWorld();
-        var npcId = world.SpawnNPC(SpawnPosition);
+        var npcId = world.SpawnNpc(SpawnPosition);
         var test = new TestSimulation(world, Seed);
 
         // Act
@@ -199,7 +199,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = new World(Map.FromRows(WalledInRows));
-        var npcId = world.SpawnNPC(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(Seed);
 
@@ -223,7 +223,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateSingleCorridorWorld();
-        var npcId = world.SpawnNPC(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(Seed);
 
@@ -245,7 +245,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateSingleCorridorWorld();
-        var npcId = world.SpawnNPC(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
         var playerId = world.SpawnPlayer(new TilePosition(2, 1));
         var rng = new Rng(Seed);
@@ -275,7 +275,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = CreateSingleCorridorWorld();
-        var npcId = world.SpawnNPC(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new TilePosition(2, 2));
         world.SpawnPlayer(new TilePosition(2, 1));
         var test = new TestSimulation(world, Seed);
 
@@ -301,7 +301,7 @@ public sealed class AiTest
         {
             // Arrange
             var world = CreateSingleCorridorWorld();
-            var npcId = world.SpawnNPC(new TilePosition(2, 2));
+            var npcId = world.SpawnNpc(new TilePosition(2, 2));
             var playerId = world.SpawnPlayer(new TilePosition(1, 1));
             var test = new TestSimulation(world, seed);
 
@@ -338,7 +338,7 @@ public sealed class AiTest
     private static WalkHistory ThinkWalk(int seed)
     {
         var world = CreateOpenWorld();
-        var npcId = world.SpawnNPC(SpawnPosition);
+        var npcId = world.SpawnNpc(SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(seed);
 
@@ -366,9 +366,9 @@ public sealed class AiTest
     {
         var world = CreateOpenWorld();
 
-        foreach (var position in ThreeNpcSpawns) world.SpawnNPC(position);
+        foreach (var position in ThreeNpcSpawns) world.SpawnNpc(position);
 
-        return (new GameServer.Simulation.Simulation(world, seed), world.GetAllAliveNPCs().ToList());
+        return (new GameServer.Simulation.Simulation(world, seed), world.GetAliveNpcs().ToList());
     }
 
     private static List<List<TilePosition>> TickAndTracePaths(

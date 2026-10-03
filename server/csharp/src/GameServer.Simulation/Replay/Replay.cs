@@ -1,4 +1,3 @@
-
 namespace GameServer.Simulation;
 
 public sealed class Replay(RecordedRun run)
@@ -7,7 +6,7 @@ public sealed class Replay(RecordedRun run)
 
     public WorldSnapshot ReplayRecordedRun()
     {
-        var world = World.CreateFromSnapshot(Run.World);
+        var world = World.CreateFromSnapshot(Run.InitialSnapshot);
         var simulation = new Simulation(world, Run.Seed);
 
         for (long tick = 0; tick <= Run.LastTick; tick++)
@@ -29,6 +28,6 @@ public sealed class Replay(RecordedRun run)
 public sealed record RecordedRun(
     long LastTick,
     int Seed,
-    WorldSnapshot World,
+    WorldSnapshot InitialSnapshot,
     IReadOnlyList<CommandLogEntry> Log
 );

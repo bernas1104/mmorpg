@@ -52,14 +52,14 @@ public sealed class CombatTest
     [InlineData(3, 1, EntityKind.Player)]
     [InlineData(3, 2, EntityKind.Player)]
     [InlineData(3, 3, EntityKind.Player)]
-    [InlineData(1, 1, EntityKind.NPC)]
-    [InlineData(1, 2, EntityKind.NPC)]
-    [InlineData(1, 3, EntityKind.NPC)]
-    [InlineData(2, 1, EntityKind.NPC)]
-    [InlineData(2, 3, EntityKind.NPC)]
-    [InlineData(3, 1, EntityKind.NPC)]
-    [InlineData(3, 2, EntityKind.NPC)]
-    [InlineData(3, 3, EntityKind.NPC)]
+    [InlineData(1, 1, EntityKind.Npc)]
+    [InlineData(1, 2, EntityKind.Npc)]
+    [InlineData(1, 3, EntityKind.Npc)]
+    [InlineData(2, 1, EntityKind.Npc)]
+    [InlineData(2, 3, EntityKind.Npc)]
+    [InlineData(3, 1, EntityKind.Npc)]
+    [InlineData(3, 2, EntityKind.Npc)]
+    [InlineData(3, 3, EntityKind.Npc)]
     public void GivenAttackerAndTarget_WhenInRange_ThenAttackSucceeds(
         int targetX,
         int targetY,
@@ -70,7 +70,7 @@ public sealed class CombatTest
         var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
         var targetId = targetKind == EntityKind.Player
             ? _world.SpawnPlayer(new TilePosition(targetX, targetY))
-            : _world.SpawnNPC(new TilePosition(targetX, targetY));
+            : _world.SpawnNpc(new TilePosition(targetX, targetY));
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
