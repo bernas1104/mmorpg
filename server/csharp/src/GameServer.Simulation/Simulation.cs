@@ -1,10 +1,9 @@
-
 namespace GameServer.Simulation;
 
 public sealed class Simulation(World world, int seed, TextWriter? log = null)
 {
     public World World { get; } = world;
-    public long TickNumber { get; private set; } = default;
+    public long TickNumber { get; private set; }
     private readonly CommandQueue _commandQueue = new();
     private readonly TextWriter? _log = log;
 
@@ -27,68 +26,79 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
     public int RngSeed => Rng.Seed;
 
     /// <summary>
-    /// Advances the simulation by one tick: think, drain, apply, then advance the tick number.
-    /// Never reads the wall clock and never sleeps -- pacing belongs to the caller.
+    /// Advances the simulation by one tick: think, drain, apply, lifecycle, then advance the tick
+    /// number. Never reads the wall clock and never sleeps -- pacing belongs to the caller.
     /// </summary>
     public void Tick()
     {
-        // THINK PASS -- runs at the top of the tick, before the queue is drained, so the commands
-        // it produces are part of this tick's batch rather than the next one's. That is not a
-        // violation of "a command enqueued mid-tick is processed next tick": this is the top of a
-        // tick, not the middle of one.
-        //
-        // It also fixes the order in which entities draw from the generator -- ascending id, via
-        // World.GetAll -- which is what makes "same seed, same run" hold. See the tie-break note
-        // below for what that costs.
+        ProcessThinkPass();
+        ProcessBatch(_commandQueue.Drain());
+        ProcessLifecycle();
+        TickNumber++;
+    }
+
+    public void Enqueue(Command command) => _commandQueue.Enqueue(command);
+
+    // THINK PASS -- runs at the top of the tick, before the queue is drained, so the commands
+    // it produces are part of this tick's batch rather than the next one's. That is not a
+    // violation of "a command enqueued mid-tick is processed next tick": this is the top of a
+    // tick, not the middle of one.
+    //
+    // It also fixes the order in which entities draw from the generator -- ascending id, via
+    // World.GetAliveNpcs -- which is what makes "same seed, same run" hold. See the tie-break note
+    // on ProcessBatch for what that costs.
+    private void ProcessThinkPass()
+    {
         foreach (var npc in World.GetAliveNpcs())
         {
             var commands = Ai.Think(World, npc, Rng, TickNumber);
             foreach (var command in commands)
                 _commandQueue.Enqueue(command);
         }
+    }
 
-        var batch = _commandQueue.Drain();
-
-        // APPLY -- deterministic, and the tie-break that falls out of it is worth knowing about.
-        //
-        // Two sort keys, and the first is the one the milestone plan asks for. Ordering by
-        // CommandKind groups the batch into phases -- every move resolves before any attack --
-        // so a player who moves and attacks on the same tick attacks from the tile they just
-        // moved to. That is the plan's "2. movement, 3. combat" written as one pass instead of
-        // two loops. The alternative, a single arrival-ordered pass, is equally deterministic
-        // but makes "move then attack" and "attack then move" two different worlds, so the
-        // outcome would depend on how a client happened to batch its intents.
-        //
-        // Sequence is the second key and is arrival order: CommandQueue stamps a monotonically
-        // increasing ordinal on enqueue, so among commands of the SAME kind whoever asked first
-        // resolves first. Within a single source that is exactly first-in-first-out -- two
-        // players' moves land in the order the players sent them and are applied in that order.
-        //
-        // Note the phase grouping is a primary/secondary key on one sort, not a hard-coded
-        // precedence: it says nothing about which entity kind goes first, only that a move
-        // precedes an attack. Attacks remain arrival-ordered among themselves, so an NPC that
-        // learns to attack will contend with a player's attack on equal terms.
-        //
-        // Arrival order across sources is not a fairness rule either -- it is a consequence of
-        // WHERE the think pass sits. Anything enqueued from outside (player input, network) has
-        // already been sitting in the queue by the time the think pass runs, so every player
-        // command carries a lower ordinal than every npc command raised this tick. Two entities
-        // contesting the same walkable tile on the same tick therefore always resolve
-        // player-first -- exercised on every contested tick by AiTest. Among several npcs, the
-        // lower EntityId goes first.
-        //
-        // So: "the player always wins the tile" is not a hard-coded precedence over npc kinds,
-        // and there is no knob to flip. It is arrival order over the only timeline these two
-        // sources share, and an npc has no arrival time -- it can only think at a tick boundary.
-        // Note also that the player's claim is the fresher one: the think pass sees the world as
-        // it was at the end of the previous tick, so the player arguably deserves the priority.
-        //
-        // If npcs ever need to win these contests, no amount of reordering fixes it, because
-        // there is no finer interleaving to recover. The answers are gameplay ones -- bumping
-        // instead of blocking, a priority attribute, line of sight -- not ordering ones. All of
-        // those are still deferred: Milestone 6 settled collision as "no pushing/bumping, no
-        // swapping", and nothing since has revisited it.
-        foreach (var command in batch.OrderBy(c => c.Command.CommandKind).ThenBy(c => c.Sequence))
+    // APPLY -- deterministic, and the tie-break that falls out of it is worth knowing about.
+    //
+    // Two sort keys, and the first is the one the milestone plan asks for. Ordering by
+    // CommandPhase groups the batch into phases -- every move resolves before any attack --
+    // so a player who moves and attacks on the same tick attacks from the tile they just
+    // moved to. That is the plan's "2. movement, 3. combat" written as one pass instead of
+    // two loops. The alternative, a single arrival-ordered pass, is equally deterministic
+    // but makes "move then attack" and "attack then move" two different worlds, so the
+    // outcome would depend on how a client happened to batch its intents.
+    //
+    // Sequence is the second key and is arrival order: CommandQueue stamps a monotonically
+    // increasing ordinal on enqueue, so among commands of the SAME phase whoever asked first
+    // resolves first. Within a single source that is exactly first-in-first-out -- two
+    // players' moves land in the order the players sent them and are applied in that order.
+    //
+    // Note the phase grouping is a primary/secondary key on one sort, not a hard-coded
+    // precedence: it says nothing about which entity kind goes first, only that a move
+    // precedes an attack. Attacks remain arrival-ordered among themselves, so an NPC that
+    // learns to attack will contend with a player's attack on equal terms.
+    //
+    // Arrival order across sources is not a fairness rule either -- it is a consequence of
+    // WHERE the think pass sits. Anything enqueued from outside (player input, network) has
+    // already been sitting in the queue by the time the think pass runs, so every player
+    // command carries a lower ordinal than every npc command raised this tick. Two entities
+    // contesting the same walkable tile on the same tick therefore always resolve
+    // player-first -- exercised on every contested tick by AiTest. Among several npcs, the
+    // lower EntityId goes first.
+    //
+    // So: "the player always wins the tile" is not a hard-coded precedence over npc kinds,
+    // and there is no knob to flip. It is arrival order over the only timeline these two
+    // sources share, and an npc has no arrival time -- it can only think at a tick boundary.
+    // Note also that the player's claim is the fresher one: the think pass sees the world as
+    // it was at the end of the previous tick, so the player arguably deserves the priority.
+    //
+    // If npcs ever need to win these contests, no amount of reordering fixes it, because
+    // there is no finer interleaving to recover. The answers are gameplay ones -- bumping
+    // instead of blocking, a priority attribute, line of sight -- not ordering ones. All of
+    // those are still deferred: Milestone 6 settled collision as "no pushing/bumping, no
+    // swapping", and nothing since has revisited it.
+    private void ProcessBatch(IReadOnlyList<QueuedCommand> batch)
+    {
+        foreach (var command in batch.OrderBy(c => c.Command.Phase).ThenBy(c => c.Sequence))
         {
             _log?.WriteLine($"tick {TickNumber}: received {command}");
 
@@ -104,16 +114,15 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
                     throw new InvalidOperationException($"Unhandled command type: {command.GetType()}");
             }
         }
+    }
 
+    private void ProcessLifecycle()
+    {
         foreach (var deadEntity in World.GetAllDead())
             deadEntity.DecrementTicksUntilRemoval();
 
         World.RemoveExpiredCorpses();
-
-        TickNumber++;
     }
-
-    public void Enqueue(Command command) => _commandQueue.Enqueue(command);
 
     private void ExecuteMovementCommand(MoveCommand moveCommand)
     {

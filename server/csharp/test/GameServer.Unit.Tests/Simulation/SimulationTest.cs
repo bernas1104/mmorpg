@@ -83,6 +83,27 @@ public sealed class SimulationTest
         positions[1].Should().BeLessThan(positions[2]);
     }
 
+    [Fact]
+    public void GivenAttackEnqueuedBeforeAMove_WhenTicked_ThenTheAttackResolvesFromThePostMoveTile()
+    {
+        // Arrange
+        var world = new World(Map.FromRows(TestMaps.GetWallBoundedTiles(10, 10)));
+        var playerId = world.SpawnPlayer(new TilePosition(5, 5));
+        var npcId = world.SpawnNpc(new TilePosition(5, 7));
+        world.GetEntity(npcId)!.UpdateNextMoveAllowedTick(1000);
+        var test = new TestSimulation(world, 1);
+
+        // Act -- the attack is enqueued FIRST. If arrival order decided phases, it would resolve
+        // from (5,5) and fail on range; the phase sort must move the player before it attacks.
+        test.Simulation.Enqueue(new AttackCommand(playerId, npcId));
+        test.Simulation.Enqueue(new MoveCommand(playerId, Direction.South));
+        test.Tick();
+
+        // Assert
+        world.GetEntity(playerId)!.TilePosition.Should().Be(new TilePosition(5, 6));
+        world.GetEntity(npcId)!.Health.Should().Be(Entity.DefaultMaxHealth - Combat.AttackDamage);
+    }
+
     private static GameServer.Simulation.Simulation CreateSimulation()
         => new(new World(Map.CreateEmpty(8, 8)), 1);
 

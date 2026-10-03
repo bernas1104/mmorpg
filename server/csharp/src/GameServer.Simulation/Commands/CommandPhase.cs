@@ -1,7 +1,7 @@
 namespace GameServer.Simulation;
 
 /// <summary>
-/// Which resolution phase a <see cref="Commands.Command"/> belongs to. Used as the primary sort
+/// Which resolution phase a <see cref="Command"/> belongs to. Used as the primary sort
 /// key in <c>Simulation.Tick</c>, so the declaration order below is load-bearing: <c>Move</c> is
 /// written first because movement has to resolve before combat within a tick, and reordering
 /// these values would silently change tick semantics without failing any test.
@@ -15,7 +15,7 @@ namespace GameServer.Simulation;
 /// than a parallel table would. The cost is that the coupling is invisible at the reorder site,
 /// which is what the note above is for.
 /// </remarks>
-public enum CommandKind
+public enum CommandPhase
 {
     Move,
     Attack
