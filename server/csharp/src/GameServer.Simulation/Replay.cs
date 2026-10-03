@@ -6,23 +6,20 @@ namespace GameServer.Simulation;
 public sealed class Replay(RecordedRun run)
 {
     public RecordedRun Run { get; } = run;
-    private Simulation? _simulation;
 
     public WorldSnapshot ReplayRecordedRun()
     {
         var world = World.CreateFromSnapshot(Run.World);
-        _simulation = new Simulation(world, Run.Seed);
+        var simulation = new Simulation(world, Run.Seed);
 
         for (long tick = 0; tick <= Run.LastTick; tick++)
         {
-            Console.WriteLine($"Tick {tick}");
-
             Run.Log
                 .Where(entry => entry.Tick == tick)
                 .ToList()
-                .ForEach(e => _simulation.Enqueue(e.Command));
+                .ForEach(e => simulation.Enqueue(e.Command));
 
-            _simulation.Tick();
+            simulation.Tick();
         }
 
         var worldSnapshot = Snapshot.CreateWorldSnapshot(world);

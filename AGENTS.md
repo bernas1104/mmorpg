@@ -51,3 +51,14 @@ These are project rules, not style preferences — breaking them silently breaks
 - Don't leave comments to the code unless they add **REAL** value;
 - **NEVER** leave comments on tests. Tests should have self explanatory names. Comments should be irrelevant;
 - Use `AwesomeAssertions` instead of xUnit's `Assert` for all tests;
+
+### File organization (C# projects)
+
+- Folders group files by **domain concept** (`Movement/`, `Combat/`, `Commands/`, `Snapshots/`, …), never by technical type — no `Enums/`, `Constants/`, `Extensions/`, `Helpers/` folders.
+- **One namespace per project** (`GameServer.Simulation`); folders organize files only. Never create a sub-namespace named after a type it contains — a child namespace shadows the same-named type in name lookup for all code in the parent namespace.
+- **One primary type per file**, named after it. A supporting type may share its owner's file only when **all** of these hold:
+  1. it is consumed only through the primary type (no independent lifecycle),
+  2. the combined file stays under ~100 lines,
+  3. splitting it out would not improve discoverability.
+
+  Examples: `QueuedCommand` stays in `CommandQueue.cs` and `RecordedRun` in `Replay.cs`; `Tile` gets its own `Tile.cs` because it appears in public signatures and evolves independently.

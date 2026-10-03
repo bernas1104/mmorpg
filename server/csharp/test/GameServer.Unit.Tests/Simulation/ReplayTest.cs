@@ -4,11 +4,9 @@ using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
 using GameServer.Simulation.Snapshots;
-using GameServer.Unit.Tests.Collections;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-[Collection(ConsoleOutputCollection.Name)]
 public sealed class ReplayTest
 {
     private static World CreateEmptyWorld(int width = 20, int height = 20)

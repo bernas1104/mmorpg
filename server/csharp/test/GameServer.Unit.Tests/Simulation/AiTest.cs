@@ -1,13 +1,11 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
-using GameServer.Unit.Tests.Collections;
-using GameServer.Unit.Tests.Helpers;
 using GameServer.Unit.Tests.Mocks;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-[Collection(ConsoleOutputCollection.Name)]
 public sealed class AiTest
 {
     private const int TicksToRun = 500;
@@ -50,7 +48,7 @@ public sealed class AiTest
         var moved = false;
         for (int tick = 0; tick < TicksToRun; tick++)
         {
-            ConsoleCapture.Tick(simulation, 1);
+            simulation.Tick();
 
             world.Map.IsWalkable(npc.TilePosition).Should().BeTrue(
                 $"npc stood on a non-walkable tile at tick {tick}: {npc.TilePosition}"
@@ -162,10 +160,10 @@ public sealed class AiTest
         // Arrange
         var world = CreateOpenWorld();
         var npcId = world.SpawnNPC(SpawnPosition);
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var test = new TestSimulation(world, Seed);
 
         // Act
-        var log = ConsoleCapture.Tick(simulation, TicksToRun);
+        var log = test.Tick(TicksToRun);
 
         // Assert
         log.Should().NotContain(
@@ -281,10 +279,10 @@ public sealed class AiTest
         var world = CreateSingleCorridorWorld();
         var npcId = world.SpawnNPC(new TilePosition(2, 2));
         world.SpawnPlayer(new TilePosition(2, 1));
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var test = new TestSimulation(world, Seed);
 
         // Act
-        var log = ConsoleCapture.Tick(simulation, TicksToRun);
+        var log = test.Tick(TicksToRun);
 
         // Assert
         log.Should().Contain(
@@ -307,11 +305,11 @@ public sealed class AiTest
             var world = CreateSingleCorridorWorld();
             var npcId = world.SpawnNPC(new TilePosition(2, 2));
             var playerId = world.SpawnPlayer(new TilePosition(1, 1));
-            var simulation = new GameServer.Simulation.Simulation(world, seed);
+            var test = new TestSimulation(world, seed);
 
             // Act
-            simulation.Enqueue(new MoveCommand(playerId, Direction.East));
-            var log = ConsoleCapture.Tick(simulation, 1);
+            test.Simulation.Enqueue(new MoveCommand(playerId, Direction.East));
+            var log = test.Tick(1);
 
             var npcMoved = log.Contains($"received MoveCommand(EntityId: {npcId}");
             if (!npcMoved) continue;
@@ -384,7 +382,7 @@ public sealed class AiTest
 
         for (int tick = 0; tick < TicksToRun; tick++)
         {
-            ConsoleCapture.Tick(simulation, 1);
+            simulation.Tick();
 
             for (int i = 0; i < npcs.Count; i++) paths[i].Add(npcs[i].TilePosition);
         }

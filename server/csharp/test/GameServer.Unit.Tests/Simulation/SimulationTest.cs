@@ -2,12 +2,10 @@ using System.Diagnostics;
 
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
-using GameServer.Unit.Tests.Collections;
-using GameServer.Unit.Tests.Helpers;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-[Collection(ConsoleOutputCollection.Name)]
 public sealed class SimulationTest
 {
     [Fact]
@@ -31,31 +29,31 @@ public sealed class SimulationTest
     public void GivenQueuedCommand_WhenTickRunsTwice_ThenCommandIsProcessedOnlyOnce()
     {
         // Arrange
-        var simulation = CreateSimulation();
-        simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
+        var test = CreateTestSimulation();
+        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
 
         // Act
-        var firstTick = ConsoleCapture.Capture(simulation.Tick);
-        var secondTick = ConsoleCapture.Capture(simulation.Tick);
+        var firstTick = test.Tick();
+        var secondTick = test.Tick();
 
         // Assert
         firstTick.Should().Contain("North");
         secondTick.Should().NotContain("North");
-        simulation.TickNumber.Should().Be(2);
+        test.Simulation.TickNumber.Should().Be(2);
     }
 
     [Fact]
     public void GivenCommandEnqueuedAfterATick_ThenItIsNotProcessedUntilTheNextTick()
     {
         // Arrange
-        var simulation = CreateSimulation();
+        var test = CreateTestSimulation();
 
         // Act
-        simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
-        var firstTick = ConsoleCapture.Capture(simulation.Tick);
+        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
+        var firstTick = test.Tick();
 
-        simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.South));
-        var secondTick = ConsoleCapture.Capture(simulation.Tick);
+        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.South));
+        var secondTick = test.Tick();
 
         // Assert
         firstTick.Should().Contain("North");
@@ -68,7 +66,7 @@ public sealed class SimulationTest
     public void GivenMultipleQueuedCommands_WhenTickRuns_ThenTheyAreProcessedInEnqueueOrder()
     {
         // Arrange
-        var simulation = CreateSimulation();
+        var test = CreateTestSimulation();
         var commands = new MoveCommand[]
         {
             new(new EntityId(2), Direction.North),
@@ -76,10 +74,10 @@ public sealed class SimulationTest
             new(new EntityId(1), Direction.North),
         };
 
-        foreach (var command in commands) simulation.Enqueue(command);
+        foreach (var command in commands) test.Simulation.Enqueue(command);
 
         // Act
-        var tick = ConsoleCapture.Capture(simulation.Tick);
+        var tick = test.Tick();
 
         // Assert
         var positions = commands
@@ -93,5 +91,8 @@ public sealed class SimulationTest
     }
 
     private static GameServer.Simulation.Simulation CreateSimulation()
+        => new(new World(Map.CreateEmpty(8, 8)), 1);
+
+    private static TestSimulation CreateTestSimulation()
         => new(new World(Map.CreateEmpty(8, 8)), 1);
 }

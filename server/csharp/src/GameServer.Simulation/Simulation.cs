@@ -3,11 +3,12 @@ using GameServer.Simulation.Enums;
 
 namespace GameServer.Simulation;
 
-public sealed class Simulation(World world, int seed)
+public sealed class Simulation(World world, int seed, TextWriter? log = null)
 {
     public World World { get; } = world;
     public long TickNumber { get; private set; } = default;
     private readonly CommandQueue _pending = new();
+    private readonly TextWriter? _log = log;
 
     /// <summary>
     /// The simulation's one and only generator. Created here, at construction, from the seed the
@@ -91,7 +92,7 @@ public sealed class Simulation(World world, int seed)
         // swapping", and nothing since has revisited it.
         foreach (var command in batch.OrderBy(c => c.Command.CommandKind).ThenBy(c => c.Sequence))
         {
-            Console.WriteLine($"tick {TickNumber}: received {command}");
+            _log?.WriteLine($"tick {TickNumber}: received {command}");
 
             switch (command.Command)
             {
@@ -121,9 +122,9 @@ public sealed class Simulation(World world, int seed)
         var result = Movement.TryMove(World, moveCommand.EntityId, moveCommand.Direction, TickNumber);
 
         if (result == MoveResult.Success)
-            Console.WriteLine($"Tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
+            _log?.WriteLine($"Tick {TickNumber}: move command succeeded for entity {moveCommand.EntityId}");
         else
-            Console.WriteLine($"Tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
+            _log?.WriteLine($"Tick {TickNumber}: move command failed for entity {moveCommand.EntityId} with result {result}");
     }
 
     private void ExecuteAttackCommand(AttackCommand attackCommand)
@@ -136,8 +137,8 @@ public sealed class Simulation(World world, int seed)
         );
 
         if (attackResult == AttackResult.Hit)
-            Console.WriteLine($"Tick {TickNumber}: attack command succeeded for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId}");
+            _log?.WriteLine($"Tick {TickNumber}: attack command succeeded for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId}");
         else
-            Console.WriteLine($"Tick {TickNumber}: attack command failed for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId} with result {attackResult}");
+            _log?.WriteLine($"Tick {TickNumber}: attack command failed for attacker {attackCommand.AttackerId} on target {attackCommand.TargetId} with result {attackResult}");
     }
 }

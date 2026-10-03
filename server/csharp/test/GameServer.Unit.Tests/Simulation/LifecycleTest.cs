@@ -1,13 +1,11 @@
 using GameServer.Simulation;
 using GameServer.Simulation.Commands;
 using GameServer.Simulation.Enums;
-using GameServer.Unit.Tests.Collections;
-using GameServer.Unit.Tests.Helpers;
 using GameServer.Unit.Tests.Mocks;
+using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-[Collection(ConsoleOutputCollection.Name)]
 public sealed class LifecycleTest
 {
     private const int Seed = 12345;
@@ -47,7 +45,7 @@ public sealed class LifecycleTest
             var stateBeforeTick = target.LifecycleState;
 
             simulation.Enqueue(new AttackCommand(attackerId, targetId));
-            ConsoleCapture.Tick(simulation, 1);
+            simulation.Tick();
 
             if (stateBeforeTick == LifecycleState.Alive && target.LifecycleState == LifecycleState.Dead)
                 tickOfDeath = simulation.TickNumber - 1; // Tick() advances the counter at its end
@@ -75,7 +73,7 @@ public sealed class LifecycleTest
         KillWithAttacks(world, simulation, attackerId, targetId);
 
         // Act
-        ConsoleCapture.Tick(simulation, ticksIntoWindow);
+        for (var i = 0; i < ticksIntoWindow; i++) simulation.Tick();
 
         // Assert
         var corpse = world.GetEntity(targetId);
@@ -89,14 +87,14 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var test = new TestSimulation(world, Seed);
         var targetId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
-        KillWithAttacks(world, simulation, attackerId, targetId);
+        KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
         // Act
-        simulation.Enqueue(new AttackCommand(attackerId, targetId));
-        var log = ConsoleCapture.Tick(simulation, 1);
+        test.Simulation.Enqueue(new AttackCommand(attackerId, targetId));
+        var log = test.Tick(1);
 
         // Assert
         world.GetEntity(targetId)!.Health.Should().Be(0);
@@ -109,14 +107,14 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var test = new TestSimulation(world, Seed);
         var targetId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
-        KillWithAttacks(world, simulation, attackerId, targetId);
+        KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
         // Act
-        simulation.Enqueue(new MoveCommand(targetId, Direction.North));
-        var log = ConsoleCapture.Tick(simulation, 1);
+        test.Simulation.Enqueue(new MoveCommand(targetId, Direction.North));
+        var log = test.Tick(1);
 
         // Assert
         world.GetEntity(targetId)!.TilePosition.Should().Be(SealedTargetSpawn);
@@ -153,13 +151,13 @@ public sealed class LifecycleTest
             var simulation = new GameServer.Simulation.Simulation(world, Seed);
             var targetId = world.SpawnNPC(SealedTargetSpawn);
             var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
-            ConsoleCapture.Tick(simulation, ticksBeforeDeath);
+            for (var i = 0; i < ticksBeforeDeath; i++) simulation.Tick();
             KillWithAttacks(world, simulation, attackerId, targetId);
 
             var ticksSurvived = 0;
             while (world.GetEntity(targetId) is not null && ticksSurvived < Entity.DefaultRemovalTicks * 2)
             {
-                ConsoleCapture.Tick(simulation, 1);
+                simulation.Tick();
                 ticksSurvived++;
             }
 
@@ -194,7 +192,7 @@ public sealed class LifecycleTest
         var windowAtDeath = corpse.RemovalTick;
 
         // Act
-        ConsoleCapture.Tick(simulation, 40);
+        for (var i = 0; i < 40; i++) simulation.Tick();
         var windowBeforeSecondHit = corpse.RemovalTick;
         corpse.TakeDamage(1);
         var windowAfterSecondHit = corpse.RemovalTick;
@@ -213,19 +211,19 @@ public sealed class LifecycleTest
     {
         // Arrange
         var world = CreateSealedWorld();
-        var simulation = new GameServer.Simulation.Simulation(world, Seed);
+        var test = new TestSimulation(world, Seed);
         var targetId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
-        KillWithAttacks(world, simulation, attackerId, targetId);
-        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
+        KillWithAttacks(world, test.Simulation, attackerId, targetId);
+        test.Tick((int)Entity.DefaultRemovalTicks);
 
         // Assert
         world.GetEntity(targetId).Should().BeNull();
 
         // Act
-        simulation.Enqueue(new MoveCommand(targetId, Direction.North));
-        simulation.Enqueue(new AttackCommand(attackerId, targetId));
-        var log = ConsoleCapture.Tick(simulation, 1);
+        test.Simulation.Enqueue(new MoveCommand(targetId, Direction.North));
+        test.Simulation.Enqueue(new AttackCommand(attackerId, targetId));
+        var log = test.Tick(1);
 
         // Assert
         log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.InvalidEntity}");
@@ -243,7 +241,7 @@ public sealed class LifecycleTest
         var firstId = world.SpawnNPC(SealedTargetSpawn);
         var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
-        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
+        for (var i = 0; i < (int)Entity.DefaultRemovalTicks; i++) simulation.Tick();
 
         // Act
         var secondId = world.SpawnNPC(SealedTargetSpawn);
@@ -270,12 +268,12 @@ public sealed class LifecycleTest
         }
 
         // Assert
-        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks / 2);
+        for (var i = 0; i < (int)Entity.DefaultRemovalTicks / 2; i++) simulation.Tick();
         foreach (var id in corpses)
             world.GetEntity(id).Should().NotBeNull($"corpse {id} vanished before its window ended");
 
         // Act
-        ConsoleCapture.Tick(simulation, (int)Entity.DefaultRemovalTicks);
+        for (var i = 0; i < (int)Entity.DefaultRemovalTicks; i++) simulation.Tick();
 
         // Assert
         foreach (var id in corpses)
@@ -322,7 +320,7 @@ public sealed class LifecycleTest
 
         for (var tick = 0; tick < TicksToTrace; tick++)
         {
-            ConsoleCapture.Tick(simulation, 1);
+            simulation.Tick();
             path.Add(npc.TilePosition);
         }
 
@@ -339,7 +337,7 @@ public sealed class LifecycleTest
         for (var tick = 0; tick < AttackTickBudget; tick++)
         {
             simulation.Enqueue(new AttackCommand(attackerId, targetId));
-            ConsoleCapture.Tick(simulation, 1);
+            simulation.Tick();
 
             if (world.GetEntity(targetId)?.LifecycleState == LifecycleState.Dead)
                 return simulation.TickNumber - 1; // Tick() advances the counter at its end

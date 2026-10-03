@@ -111,7 +111,7 @@ using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
     ? null
     : PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; cts.Cancel(); });
 
-var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed);
+var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed, Console.Out);
 simulation.World.SpawnPlayer(new TilePosition(4, 4));
 simulation.World.SpawnPlayer(new TilePosition(5, 5));
 simulation.World.SpawnPlayer(new TilePosition(2, 4));
