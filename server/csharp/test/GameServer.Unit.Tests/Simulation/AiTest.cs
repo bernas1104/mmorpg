@@ -165,7 +165,7 @@ public sealed class AiTest
 
         // Assert
         log.Should().NotContain(
-            nameof(MoveResult.InvalidExhaustion),
+            nameof(MoveResult.OnCooldown),
             "the think pass gates on NextMoveAllowedTick before emitting anything"
         );
 
@@ -261,12 +261,12 @@ public sealed class AiTest
 
         Movement.TryMove(world, npcId, commands[0].Direction, currentTick: 0)
             .Should()
-            .Be(MoveResult.TileOccupied);
+            .Be(MoveResult.TargetOccupied);
         npc.TilePosition.Should().Be(new TilePosition(2, 2));
 
         Movement.TryMove(world, playerId, Direction.South, currentTick: 0)
             .Should()
-            .Be(MoveResult.TileOccupied);
+            .Be(MoveResult.TargetOccupied);
         world.GetEntity(playerId)!.TilePosition.Should().Be(new TilePosition(2, 1));
     }
 
@@ -284,7 +284,7 @@ public sealed class AiTest
 
         // Assert
         log.Should().Contain(
-            $"move command failed for entity {npcId} with result {MoveResult.TileOccupied}"
+            $"move command failed for entity {npcId} with result {MoveResult.TargetOccupied}"
         );
         log.Should().NotContain($"move command succeeded for entity {npcId}");
         world.GetEntity(npcId)!.TilePosition.Should().Be(new TilePosition(2, 2));
@@ -316,7 +316,7 @@ public sealed class AiTest
             contestedTicks++;
 
             log.Should().Contain(
-                $"move command failed for entity {npcId} with result {MoveResult.TileOccupied}",
+                $"move command failed for entity {npcId} with result {MoveResult.TargetOccupied}",
                 "the player holds the tile, so the npc's identical claim is refused by the shared "
                 + "collision rule rather than by anything npc-specific"
             );

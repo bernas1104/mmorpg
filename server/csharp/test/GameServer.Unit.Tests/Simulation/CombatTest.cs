@@ -181,7 +181,7 @@ public sealed class CombatTest
         var result = Combat.TryAttack(_world, deadAttackerId, targetId, 0);
 
         // Assert
-        result.Should().Be(AttackResult.InvalidDead);
+        result.Should().Be(AttackResult.EntityDead);
     }
 
     [Fact]
@@ -197,6 +197,6 @@ public sealed class CombatTest
         var result = Combat.TryAttack(_world, attackerId, targetId, 0);
 
         // Assert
-        result.Should().Be(AttackResult.InvalidDead);
+        result.Should().Be(AttackResult.EntityDead);
     }
 }

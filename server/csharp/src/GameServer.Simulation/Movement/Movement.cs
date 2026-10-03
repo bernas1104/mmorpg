@@ -14,21 +14,21 @@ public static class Movement
     {
         var entity = world.GetEntity(entityId);
         if (entity is null)
-            return MoveResult.InvalidEntity;
+            return MoveResult.UnknownEntity;
 
         if (entity.LifecycleState != LifecycleState.Alive)
-            return MoveResult.InvalidDead;
+            return MoveResult.EntityDead;
 
         var targetPosition = entity.TilePosition.Step(direction);
 
         if (!world.Map.IsWalkable(targetPosition))
-            return MoveResult.InvalidTarget;
+            return MoveResult.UnwalkableTarget;
 
         if (world.HasEntityOnTile(targetPosition))
-            return MoveResult.TileOccupied;
+            return MoveResult.TargetOccupied;
 
         if (currentTick < entity.NextMoveAllowedTick)
-            return MoveResult.InvalidExhaustion;
+            return MoveResult.OnCooldown;
 
         entity.MoveTo(targetPosition);
         entity.UpdateNextMoveAllowedTick(currentTick + MoveCooldownTicks);

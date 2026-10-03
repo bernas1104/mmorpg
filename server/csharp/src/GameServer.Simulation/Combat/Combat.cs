@@ -9,21 +9,21 @@ public static class Combat
 
     public static AttackResult TryAttack(World world, EntityId attackerId, EntityId targetId, long currentTick)
     {
-        if (attackerId == targetId) return AttackResult.InvalidTarget;
+        if (attackerId == targetId) return AttackResult.SelfTarget;
 
         var attacker = world.GetEntity(attackerId);
         var target = world.GetEntity(targetId);
 
-        if (attacker == null || target == null) return AttackResult.InvalidEntity;
+        if (attacker == null || target == null) return AttackResult.UnknownEntity;
 
         if (
             attacker.LifecycleState != LifecycleState.Alive
             || target.LifecycleState != LifecycleState.Alive
-        ) return AttackResult.InvalidDead;
+        ) return AttackResult.EntityDead;
 
-        if (!IsWithinAttackRange(attacker, target)) return AttackResult.InvalidOutOfRange;
+        if (!IsWithinAttackRange(attacker, target)) return AttackResult.TargetOutOfRange;
 
-        if (currentTick < attacker.NextAttackAllowedTick) return AttackResult.InvalidExhaustion;
+        if (currentTick < attacker.NextAttackAllowedTick) return AttackResult.OnCooldown;
 
         target.TakeDamage(AttackDamage);
         attacker.UpdateNextAttackAllowedTick(currentTick + AttackCooldownTicks);

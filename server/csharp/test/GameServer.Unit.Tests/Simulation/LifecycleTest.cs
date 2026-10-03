@@ -97,7 +97,7 @@ public sealed class LifecycleTest
         // Assert
         world.GetEntity(targetId)!.Health.Should().Be(0);
         log.Should().Contain($"attack command failed for attacker {attackerId} on target {targetId}"
-            + $" with result {AttackResult.InvalidDead}");
+            + $" with result {AttackResult.EntityDead}");
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class LifecycleTest
 
         // Assert
         world.GetEntity(targetId)!.TilePosition.Should().Be(SealedTargetSpawn);
-        log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.InvalidDead}");
+        log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.EntityDead}");
     }
 
     [Fact]
@@ -224,9 +224,9 @@ public sealed class LifecycleTest
         var log = test.Tick(1);
 
         // Assert
-        log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.InvalidEntity}");
+        log.Should().Contain($"move command failed for entity {targetId} with result {MoveResult.UnknownEntity}");
         log.Should().Contain($"attack command failed for attacker {attackerId} on target {targetId}"
-            + $" with result {AttackResult.InvalidEntity}");
+            + $" with result {AttackResult.UnknownEntity}");
         world.GetEntity(attackerId)!.TilePosition.Should().Be(SealedAttackerSpawn);
     }
 

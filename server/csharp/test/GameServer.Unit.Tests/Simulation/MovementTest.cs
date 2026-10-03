@@ -126,12 +126,12 @@ public sealed class MovementTest
     }
 
     [Fact]
-    public void GivenNonExistentPlayer_WhenMoving_ThenReturnsInvalidEntity()
+    public void GivenNonExistentPlayer_WhenMoving_ThenReturnsUnknownEntity()
     {
         // Arrange && Act && Assert
         Movement.TryMove(_world, new EntityId(999), Direction.North, 0)
             .Should()
-            .Be(MoveResult.InvalidEntity);
+            .Be(MoveResult.UnknownEntity);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class MovementTest
         var result = Movement.TryMove(_world, playerId, Direction.North, 0);
 
         // Assert
-        result.Should().Be(MoveResult.TileOccupied);
+        result.Should().Be(MoveResult.TargetOccupied);
 
         var player = _world.GetEntity(playerId);
         player.Should().NotBeNull();
@@ -192,14 +192,14 @@ public sealed class MovementTest
 
         // Assert
         winnerResult.Should().Be(MoveResult.Success);
-        loserResult.Should().Be(MoveResult.TileOccupied);
+        loserResult.Should().Be(MoveResult.TargetOccupied);
 
         _world.GetEntity(winnerId)!.TilePosition.Should().Be(new TilePosition(5, 5));
         _world.GetEntity(loserId)!.TilePosition.Should().Be(new TilePosition(5, 6));
     }
 
     [Fact]
-    public void GivenDeadPlayer_WhenMoving_ThenReturnsInvalidDead()
+    public void GivenDeadPlayer_WhenMoving_ThenReturnsEntityDead()
     {
         // Arrange
         var deadPlayerId = _world.SpawnPlayer(new TilePosition(5, 5));
@@ -210,7 +210,7 @@ public sealed class MovementTest
         var result = Movement.TryMove(_world, deadPlayerId, Direction.North, 0);
 
         // Assert
-        result.Should().Be(MoveResult.InvalidDead);
+        result.Should().Be(MoveResult.EntityDead);
         deadPlayer.TilePosition.Should().Be(new TilePosition(5, 5));
     }
 }
