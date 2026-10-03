@@ -52,4 +52,19 @@ public sealed class Map
     }
 
     public static Map FromTiles(int width, int height, Tile[,] tiles) => new(width, height, tiles);
+
+    public MapSnapshot ToSnapshot()
+    {
+        var builder = new System.Text.StringBuilder(Height * (Width + 1));
+
+        for (var y = 0; y < Height; y++)
+        {
+            for (var x = 0; x < Width; x++)
+                builder.Append(_tiles[x, y].Walkable ? '.' : '#');
+
+            if (y < Height - 1) builder.Append('\n');
+        }
+
+        return new MapSnapshot(Width, Height, builder.ToString());
+    }
 }

@@ -56,21 +56,7 @@ public sealed class ReplayTest
     )
     {
         actualTick.Should().Be(expectedTick);
-        actual.Map.Width.Should().Be(expected.Map.Width);
-        actual.Map.Height.Should().Be(expected.Map.Height);
-
-        var expectedEntities = expected.Entities.OrderBy(e => e.Id.Value).ToList();
-        var actualEntities = actual.Entities.OrderBy(e => e.Id.Value).ToList();
-
-        actualEntities.Count.Should().Be(expectedEntities.Count);
-
-        for (var i = 0; i < expectedEntities.Count; i++)
-        {
-            var actualEntity = actualEntities[i];
-            var expectedEntity = expectedEntities[i];
-
-            actualEntity.Should().BeEquivalentTo(expectedEntity);
-        }
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Fact]

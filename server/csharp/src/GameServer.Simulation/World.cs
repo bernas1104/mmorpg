@@ -85,7 +85,7 @@ public sealed class World(Map map)
 
     public static World CreateFromSnapshot(WorldSnapshot snapshot)
     {
-        var world = new World(snapshot.Map)
+        var world = new World(snapshot.Map.ToMap())
         {
             IdCounter = snapshot.IdCounter
         };
