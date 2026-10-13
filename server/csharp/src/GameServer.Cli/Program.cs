@@ -193,6 +193,9 @@ void CommandParser(string? input)
 
             Console.WriteLine("---");
             return;
+        case "quit":
+            cts.Cancel();
+            return;
         default:
             Console.WriteLine("Unknown command");
             return;
@@ -311,4 +314,69 @@ while (!cts.Token.IsCancellationRequested)
 
 Console.WriteLine($"Simulation stopped. Tick {simulation.TickNumber}");
 
+var recordedRun = new RecordedRun(
+    simulation.TickNumber,
+    simulation.RngSeed,
+    worldSnapshot,
+    commandLog
+);
+
+var replay = new Replay(recordedRun);
+var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
+
+Console.WriteLine($"Final replay world snapshot: {finalReplayWorldSnapshot.Equals(WorldSnapshot.Of(simulation.World))}");
+Console.WriteLine($"Simulation final tick {simulation.TickNumber}");
+Console.WriteLine($"Final replay tick {replay.FinalTickNumber}");
+
 return exitOk;
+
+// using System.Text;
+
+// using GameServer.Network;
+
+// try
+// {
+//     UdpSocket udpSocket = new();
+//     ReliabilitySystem reliabilitySystem = new();
+
+//     if (!udpSocket.Bind(3000))
+//     {
+//         Console.WriteLine("Failed to bind UDP socket on port 3000");
+//         return -1;
+//     }
+
+//     udpSocket.SetNonBlocking(true);
+
+//     Console.WriteLine("Server listening on port 3000...");
+
+//     var out_address = string.Empty;
+//     var out_port = ushort.MinValue;
+//     var buffer = new byte[1024];
+
+//     while (true)
+//     {
+//         int bytes = udpSocket.ReceiveFrom(ref buffer, ref out_address, ref out_port);
+
+//         if (bytes > 0)
+//         {
+//             var packetRead = reliabilitySystem.ReadPacket(buffer);
+
+//             Console.WriteLine($"Received {bytes} bytes from {out_address}:{out_port} message: {Encoding.UTF8.GetString(packetRead)}");
+
+//             var reply = "Server saw: " + Encoding.UTF8.GetString(buffer, 0, bytes);
+
+//             var bytesToSend = reliabilitySystem.WritePacket(Encoding.UTF8.GetBytes(reply));
+
+//             udpSocket.SendTo(out_address, out_port, bytesToSend);
+//         }
+
+//         Thread.Sleep(16);
+//     }
+// }
+// catch (Exception ex)
+// {
+//     Console.WriteLine($"An error occurred: {ex.Message}");
+//     return -1;
+// }
+
+// return 0;

@@ -50,6 +50,30 @@ public sealed class SnapshotTest
     }
 
     [Fact]
+    public void GivenTwoWorldsInTheSameState_WhenSnapshot_ThenTheSnapshotsAreEqual()
+    {
+        var first = TestWorlds.Open(5, 5);
+        first.SpawnPlayer(new TilePosition(2, 2));
+
+        var second = TestWorlds.Open(5, 5);
+        second.SpawnPlayer(new TilePosition(2, 2));
+
+        WorldSnapshot.Of(first).Should().Be(WorldSnapshot.Of(second));
+    }
+
+    [Fact]
+    public void GivenTwoWorldsInDifferentStates_WhenSnapshot_ThenTheSnapshotsAreNotEqual()
+    {
+        var first = TestWorlds.Open(5, 5);
+        first.SpawnPlayer(new TilePosition(2, 2));
+
+        var second = TestWorlds.Open(5, 5);
+        second.SpawnPlayer(new TilePosition(3, 2));
+
+        WorldSnapshot.Of(first).Should().NotBe(WorldSnapshot.Of(second));
+    }
+
+    [Fact]
     public void GivenMapSnapshot_WhenConvertedBackToMap_ThenWalkabilityMatchesTheOriginal()
     {
         // Arrange

@@ -109,7 +109,9 @@ number. When it reaches zero the entity is marked `Removed` and swept by
 and walkability as a plain string of `.`/`#` rows), the `IdCounter`, and one `EntitySnapshot`
 per entity. Everything in it is an immutable record of plain data — nothing holds a live `Map`,
 `World`, or `Entity` reference, so a snapshot survives later world changes untouched and
-compares structurally (`BeEquivalentTo`, record equality on `MapSnapshot`).
+compares structurally. `MapSnapshot` and `EntitySnapshot` are records, and `WorldSnapshot`
+overrides equality to sequence-compare its entity list; a plain record would compare that list
+by reference and report two content-identical snapshots as unequal.
 
 `WorldSnapshot.Of(world)` captures; `World.CreateFromSnapshot(snapshot)` reconstructs — that
 pair is what replay is built on.
@@ -170,7 +172,7 @@ else. It is not built now because it would mean guessing at what the network pha
 | `Combat/Combat.cs` | `TryAttack` — Chebyshev range, damage, attack cooldown |
 | `Combat/AttackResult.cs` | Combat outcome vocabulary |
 | `Ai/Ai.cs` | `Think` — NPC behaviours as pure command producers; owns `WanderChance` |
-| `Replay/Replay.cs` | `Replay.Run` — re-executes a `RecordedRun` (+ `RecordedRun`) |
+| `Replay/Replay.cs` | `ReplayRecordedRun()` — re-executes a `RecordedRun` and exposes its replay-final tick (+ `RecordedRun`) |
 | `Snapshots/WorldSnapshot.cs` | The output seam record; `Of(world)` captures |
 | `Snapshots/MapSnapshot.cs` | Immutable map representation |
 | `Snapshots/EntitySnapshot.cs` | Per-entity plain data |

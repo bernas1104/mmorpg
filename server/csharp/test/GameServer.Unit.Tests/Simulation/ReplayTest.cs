@@ -56,7 +56,7 @@ public sealed class ReplayTest
         var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.FinalTickNumber);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class ReplayTest
         var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.FinalTickNumber);
     }
 
     [Fact]
@@ -180,6 +180,6 @@ public sealed class ReplayTest
         var liveSimWorldSnapshot = WorldSnapshot.Of(liveSim.World);
         var finalReplayWorldSnapshot = replay.ReplayRecordedRun();
 
-        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.Run.LastTick);
+        AssertWorldsEqual(liveSimWorldSnapshot, finalReplayWorldSnapshot, liveSim.TickNumber, replay.FinalTickNumber);
     }
 }
