@@ -24,8 +24,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new Simulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         var target = world.GetEntity(targetId)!;
 
         // Act
@@ -35,7 +35,7 @@ public sealed class LifecycleTest
         {
             var stateBeforeTick = target.LifecycleState;
 
-            simulation.Enqueue(new AttackCommand(attackerId, targetId));
+            simulation.EnqueueCommand(new AttackCommand(attackerId, targetId));
             simulation.Tick();
 
             if (stateBeforeTick == LifecycleState.Alive && target.LifecycleState == LifecycleState.Dead)
@@ -59,8 +59,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new Simulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
 
         // Act
@@ -79,12 +79,12 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
         // Act
-        test.Simulation.Enqueue(new AttackCommand(attackerId, targetId));
+        test.Simulation.EnqueueCommand(new AttackCommand(attackerId, targetId));
         var log = test.Tick(1);
 
         // Assert
@@ -99,12 +99,12 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
 
         // Act
-        test.Simulation.Enqueue(new MoveCommand(targetId, Direction.North));
+        test.Simulation.EnqueueCommand(new MoveCommand(targetId, Direction.North));
         var log = test.Tick(1);
 
         // Assert
@@ -118,8 +118,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateWorld();
         var simulation = new Simulation(world, Seed);
-        var corpseId = world.SpawnNpc(OpenCorpseSpawn);
-        var neighbourId = world.SpawnNpc(NeighbourSpawn);
+        var corpseId = world.SpawnNpc(new EntityId(0), OpenCorpseSpawn);
+        var neighbourId = world.SpawnNpc(new EntityId(1), NeighbourSpawn);
         world.GetEntity(corpseId)!.TakeDamage(world.GetEntity(corpseId)!.Health);
 
         // Act
@@ -140,8 +140,8 @@ public sealed class LifecycleTest
         {
             var world = CreateSealedWorld();
             var simulation = new Simulation(world, Seed);
-            var targetId = world.SpawnNpc(SealedTargetSpawn);
-            var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+            var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+            var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
             for (var i = 0; i < ticksBeforeDeath; i++) simulation.Tick();
             KillWithAttacks(world, simulation, attackerId, targetId);
 
@@ -176,8 +176,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new Simulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, targetId);
         var corpse = world.GetEntity(targetId)!;
         var windowAtDeath = corpse.TicksUntilRemoval;
@@ -203,8 +203,8 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var test = new TestSimulation(world, Seed);
-        var targetId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var targetId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, test.Simulation, attackerId, targetId);
         test.Tick((int)Entity.DefaultCorpseWindowTicks);
 
@@ -212,8 +212,8 @@ public sealed class LifecycleTest
         world.GetEntity(targetId).Should().BeNull();
 
         // Act
-        test.Simulation.Enqueue(new MoveCommand(targetId, Direction.North));
-        test.Simulation.Enqueue(new AttackCommand(attackerId, targetId));
+        test.Simulation.EnqueueCommand(new MoveCommand(targetId, Direction.North));
+        test.Simulation.EnqueueCommand(new AttackCommand(attackerId, targetId));
         var log = test.Tick(1);
 
         // Assert
@@ -229,13 +229,13 @@ public sealed class LifecycleTest
         // Arrange
         var world = CreateSealedWorld();
         var simulation = new Simulation(world, Seed);
-        var firstId = world.SpawnNpc(SealedTargetSpawn);
-        var attackerId = world.SpawnPlayer(SealedAttackerSpawn);
+        var firstId = world.SpawnNpc(new EntityId(0), SealedTargetSpawn);
+        var attackerId = world.SpawnPlayer(new EntityId(1), SealedAttackerSpawn);
         KillWithAttacks(world, simulation, attackerId, firstId);
         for (var i = 0; i < (int)Entity.DefaultCorpseWindowTicks; i++) simulation.Tick();
 
         // Act
-        var secondId = world.SpawnNpc(SealedTargetSpawn);
+        var secondId = world.SpawnNpc(new EntityId(2), SealedTargetSpawn);
 
         // Assert
         secondId.Value.Should().BeGreaterThan(firstId.Value);
@@ -252,7 +252,7 @@ public sealed class LifecycleTest
         var corpses = new List<EntityId>();
         for (var x = 1; x <= 6; x++)
         {
-            var id = world.SpawnNpc(new TilePosition(x, 5));
+            var id = world.SpawnNpc(new EntityId((uint)(x - 1)), new TilePosition(x, 5));
             var entity = world.GetEntity(id)!;
             entity.TakeDamage(entity.Health);
             corpses.Add(id);
@@ -297,11 +297,11 @@ public sealed class LifecycleTest
     {
         var world = CreateWorld();
         var simulation = new Simulation(world, Seed);
-        var npcId = world.SpawnNpc(WandererSpawn);
+        var npcId = world.SpawnNpc(new EntityId(0), WandererSpawn);
 
         if (withCorpse)
         {
-            var corpseId = world.SpawnNpc(FarCorpseSpawn);
+            var corpseId = world.SpawnNpc(new EntityId(1), FarCorpseSpawn);
             var corpse = world.GetEntity(corpseId)!;
             corpse.TakeDamage(corpse.Health);
         }
@@ -327,7 +327,7 @@ public sealed class LifecycleTest
     {
         for (var tick = 0; tick < AttackTickBudget; tick++)
         {
-            simulation.Enqueue(new AttackCommand(attackerId, targetId));
+            simulation.EnqueueCommand(new AttackCommand(attackerId, targetId));
             simulation.Tick();
 
             if (world.GetEntity(targetId)?.LifecycleState == LifecycleState.Dead)

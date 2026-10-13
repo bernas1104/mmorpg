@@ -42,8 +42,8 @@ public static class TestWorlds
 
         foreach (var entity in source.GetAll())
         {
-            if (entity.Kind == EntityKind.Player) clone.SpawnPlayer(entity.TilePosition);
-            else if (entity.Kind == EntityKind.Npc) clone.SpawnNpc(entity.TilePosition);
+            if (entity.Kind == EntityKind.Player) clone.SpawnPlayer(entity.Id, entity.TilePosition);
+            else if (entity.Kind == EntityKind.Npc) clone.SpawnNpc(entity.Id, entity.TilePosition);
         }
 
         return clone;

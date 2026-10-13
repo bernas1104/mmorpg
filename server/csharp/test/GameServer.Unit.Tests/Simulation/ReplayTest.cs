@@ -31,12 +31,13 @@ public sealed class ReplayTest
         const int ticksToRun = 100;
 
         var initialWorld = CreateEmptyWorld();
-        initialWorld.SpawnPlayer(new TilePosition(10, 10));
-        initialWorld.SpawnNpc(new TilePosition(5, 5));
+        initialWorld.SpawnPlayer(new EntityId(1), new TilePosition(10, 10));
+        initialWorld.SpawnNpc(new EntityId(2), new TilePosition(5, 5));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
+        var hostEvents = new List<HostEvent>();
 
         for (var tick = 0; tick < ticksToRun; tick++)
         {
@@ -49,7 +50,8 @@ public sealed class ReplayTest
                 liveSim.TickNumber,
                 seed,
                 replayWorld,
-                log
+                log,
+                hostEvents.Cast<HostEvent>().ToList()
             )
         );
 
@@ -66,12 +68,13 @@ public sealed class ReplayTest
         const int ticksToRun = 60;
 
         var initialWorld = CreateEmptyWorld();
-        var attacker = initialWorld.SpawnPlayer(new TilePosition(5, 5));
-        var target = initialWorld.SpawnNpc(new TilePosition(6, 5));
+        var attacker = initialWorld.SpawnPlayer(new EntityId(1), new TilePosition(5, 5));
+        var target = initialWorld.SpawnNpc(new EntityId(2), new TilePosition(6, 5));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
+        var hostEvents = new List<HostEvent>();
 
         for (var tick = 0; tick < ticksToRun; tick++)
         {
@@ -81,10 +84,8 @@ public sealed class ReplayTest
             {
                 var attackCmd = new AttackCommand(attacker, target);
                 log.Add(new CommandLogEntry(currentTick, attackCmd));
-                liveSim.Enqueue(attackCmd);
+                liveSim.EnqueueCommand(attackCmd);
             }
-
-
 
             liveSim.Tick();
         }
@@ -95,7 +96,8 @@ public sealed class ReplayTest
                 liveSim.TickNumber,
                 seed,
                 replayWorld,
-                log
+                log,
+                hostEvents.Cast<HostEvent>().ToList()
             )
         );
 
@@ -113,15 +115,16 @@ public sealed class ReplayTest
         const int commandsPerTick = 3;
 
         var initialWorld = CreateEmptyWorld();
-        initialWorld.SpawnPlayer(new TilePosition(1, 1));
-        initialWorld.SpawnPlayer(new TilePosition(18, 1));
-        initialWorld.SpawnNpc(new TilePosition(1, 18));
-        initialWorld.SpawnNpc(new TilePosition(18, 18));
-        initialWorld.SpawnNpc(new TilePosition(10, 10));
+        initialWorld.SpawnPlayer(new EntityId(1), new TilePosition(1, 1));
+        initialWorld.SpawnPlayer(new EntityId(2), new TilePosition(18, 1));
+        initialWorld.SpawnNpc(new EntityId(3), new TilePosition(1, 18));
+        initialWorld.SpawnNpc(new EntityId(4), new TilePosition(18, 18));
+        initialWorld.SpawnNpc(new EntityId(5), new TilePosition(10, 10));
 
         var liveWorld = CloneWorld(initialWorld);
         var liveSim = new Simulation(liveWorld, seed);
         var log = new List<CommandLogEntry>();
+        var hostEvents = new List<HostEvent>();
         var rng = new Random(seed);
 
         var directions = Enum.GetValues<Direction>();
@@ -146,7 +149,7 @@ public sealed class ReplayTest
                     var dir = directions[rng.Next(directions.Length)];
                     var moveCmd = new MoveCommand(entity.Id, dir);
                     log.Add(new CommandLogEntry(currentTick, moveCmd));
-                    liveSim.Enqueue(moveCmd);
+                    liveSim.EnqueueCommand(moveCmd);
                 }
                 else
                 {
@@ -159,7 +162,7 @@ public sealed class ReplayTest
                         var target = potentialTargets[rng.Next(potentialTargets.Count)];
                         var attackCmd = new AttackCommand(entity.Id, target.Id);
                         log.Add(new CommandLogEntry(currentTick, attackCmd));
-                        liveSim.Enqueue(attackCmd);
+                        liveSim.EnqueueCommand(attackCmd);
                     }
                 }
             }
@@ -173,7 +176,8 @@ public sealed class ReplayTest
                 liveSim.TickNumber,
                 seed,
                 replayWorld,
-                log
+                log,
+                hostEvents.Cast<HostEvent>().ToList()
             )
         );
 

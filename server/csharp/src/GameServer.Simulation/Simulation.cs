@@ -5,6 +5,7 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
     public World World { get; } = world;
     public long TickNumber { get; private set; }
     private readonly CommandQueue _commandQueue = new();
+    private readonly HostEventQueue _hostEventQueue = new();
     private readonly TextWriter? _log = log;
 
     /// <summary>
@@ -32,12 +33,15 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
     public void Tick()
     {
         ProcessThinkPass();
+        ProcessHostEvents(_hostEventQueue.Drain());
         ProcessBatch(_commandQueue.Drain());
         ProcessLifecycle();
         TickNumber++;
     }
 
-    public void Enqueue(Command command) => _commandQueue.Enqueue(command);
+    public void EnqueueCommand(Command command) => _commandQueue.Enqueue(command);
+
+    public void EnqueueHostEvent(HostEvent hostEvent) => _hostEventQueue.Enqueue(hostEvent);
 
     // THINK PASS -- runs at the top of the tick, before the queue is drained, so the commands
     // it produces are part of this tick's batch rather than the next one's. That is not a
@@ -54,6 +58,26 @@ public sealed class Simulation(World world, int seed, TextWriter? log = null)
             var commands = Ai.Think(World, npc, Rng, TickNumber);
             foreach (var command in commands)
                 _commandQueue.Enqueue(command);
+        }
+    }
+
+    private void ProcessHostEvents(IReadOnlyList<QueuedHostEvent> hostEvents)
+    {
+        foreach (var hostEvent in hostEvents.OrderBy(e => e.Sequence))
+        {
+            switch (hostEvent.HostEvent)
+            {
+                case PlayerSpawned playerSpawned:
+                    World.SpawnPlayer(playerSpawned.EntityId, playerSpawned.TilePosition);
+                    break;
+                case PlayerDespawned playerDespawned:
+                    World.DespawnPlayer(playerDespawned.EntityId);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unhandled host event type: {hostEvent.GetType()}");
+            }
+
+            _log?.WriteLine($"Tick {TickNumber}: host event processed: {hostEvent.HostEvent.GetType()}");
         }
     }
 

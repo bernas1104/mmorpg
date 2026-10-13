@@ -9,12 +9,16 @@ public sealed class Replay(RecordedRun run)
     {
         var world = World.CreateFromSnapshot(Run.InitialSnapshot);
         var simulation = new Simulation(world, Run.Seed);
-        var logByTick = Run.Log.ToLookup(entry => entry.Tick);
+        var eventLogByTick = Run.HostEvents.ToLookup(e => e.TickNumber);
+        var commandLogByTick = Run.Log.ToLookup(entry => entry.Tick);
 
         for (long tick = 0; tick < Run.TickCount; tick++)
         {
-            foreach (var entry in logByTick[tick])
-                simulation.Enqueue(entry.Command);
+            foreach (var hostEvent in eventLogByTick[tick])
+                simulation.EnqueueHostEvent(hostEvent);
+
+            foreach (var entry in commandLogByTick[tick])
+                simulation.EnqueueCommand(entry.Command);
 
             simulation.Tick();
         }
@@ -29,5 +33,6 @@ public sealed record RecordedRun(
     long TickCount,
     int Seed,
     WorldSnapshot InitialSnapshot,
-    IReadOnlyList<CommandLogEntry> Log
+    IReadOnlyList<CommandLogEntry> Log,
+    IReadOnlyList<HostEvent> HostEvents
 );

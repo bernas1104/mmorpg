@@ -95,7 +95,7 @@ public sealed class DeterminismTest
     private static WalkHistory ThinkWalk(int seed)
     {
         var world = ThinkWalkWorld();
-        var npcId = world.SpawnNpc(SpawnPosition);
+        var npcId = world.SpawnNpc(new EntityId(0), SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(seed);
 
@@ -122,7 +122,7 @@ public sealed class DeterminismTest
     {
         var world = ThinkWalkWorld();
 
-        foreach (var position in ThreeNpcSpawns) world.SpawnNpc(position);
+        for (int i = 0; i < ThreeNpcSpawns.Length; i++) world.SpawnNpc(new EntityId((uint)i), ThreeNpcSpawns[i]);
 
         return (new Simulation(world, seed), world.GetAliveNpcs().ToList());
     }

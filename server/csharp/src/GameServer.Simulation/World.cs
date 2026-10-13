@@ -4,39 +4,47 @@ namespace GameServer.Simulation;
 public sealed class World(Map map)
 {
     public Map Map { get; } = map;
-    public int IdCounter { get; private set; }
     private readonly Dictionary<EntityId, Entity> _entities = [];
 
-    public EntityId SpawnPlayer(TilePosition position)
+    public EntityId SpawnPlayer(EntityId id, TilePosition position)
     {
+        var player = SpawnEntity(id, EntityKind.Player, position);
+        return player;
+    }
+
+    public EntityId SpawnNpc(EntityId id, TilePosition position)
+    {
+
+        var npc = SpawnEntity(id, EntityKind.Npc, position);
+        return npc;
+    }
+
+    private EntityId SpawnEntity(EntityId id, EntityKind kind, TilePosition position)
+    {
+        if (_entities.ContainsKey(id))
+            throw new ArgumentException(
+                $"An entity with ID {id} already exists.",
+                nameof(id)
+            );
+
         if (!Map.IsWalkable(position))
             throw new ArgumentOutOfRangeException(
                 nameof(position),
                 $"Position {position} is out of bounds or not walkable."
             );
 
-        var id = new EntityId(IdCounter++);
-        var player = new Entity(id, EntityKind.Player, position);
+        var entity = new Entity(id, kind, position);
 
-        _entities[id] = player;
+        _entities[id] = entity;
 
         return id;
     }
 
-    public EntityId SpawnNpc(TilePosition position)
+    public bool DespawnPlayer(EntityId id)
     {
-        if (!Map.IsWalkable(position))
-            throw new ArgumentOutOfRangeException(
-                nameof(position),
-                $"Position {position} is out of bounds or not walkable."
-            );
-
-        var id = new EntityId(IdCounter++);
-        var npc = new Entity(id, EntityKind.Npc, position);
-
-        _entities[id] = npc;
-
-        return id;
+        return _entities.TryGetValue(id, out var entity)
+            && entity.Kind == EntityKind.Player
+            && _entities.Remove(id);
     }
 
     public Entity? GetEntity(EntityId id) => _entities.TryGetValue(id, out var entity)
@@ -85,11 +93,7 @@ public sealed class World(Map map)
 
     public static World CreateFromSnapshot(WorldSnapshot snapshot)
     {
-        var world = new World(snapshot.Map.ToMap())
-        {
-            IdCounter = snapshot.IdCounter
-        };
-
+        var world = new World(snapshot.Map.ToMap());
 
         foreach (var entitySnapshot in snapshot.Entities)
         {

@@ -17,7 +17,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.Open();
-        var npcId = world.SpawnNpc(SpawnPosition);
+        var npcId = world.SpawnNpc(new EntityId(0), SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         var simulation = new Simulation(world, Seed);
 
@@ -45,7 +45,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.Open();
-        var npcId = world.SpawnNpc(SpawnPosition);
+        var npcId = world.SpawnNpc(new EntityId(0), SpawnPosition);
         var npc = world.GetEntity(npcId)!;
         npc.UpdateNextMoveAllowedTick(Movement.MoveCooldownTicks);
         var rng = new Rng(Seed);
@@ -62,7 +62,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.Open();
-        var npcId = world.SpawnNpc(SpawnPosition);
+        var npcId = world.SpawnNpc(new EntityId(0), SpawnPosition);
         var test = new TestSimulation(world, Seed);
 
         // Act
@@ -85,7 +85,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.Open();
-        var playerId = world.SpawnPlayer(SpawnPosition);
+        var playerId = world.SpawnPlayer(new EntityId(0), SpawnPosition);
         var player = world.GetEntity(playerId)!;
         var rng = new Rng(Seed);
 
@@ -104,7 +104,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.WalledIn();
-        var npcId = world.SpawnNpc(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new EntityId(0u), new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(Seed);
 
@@ -128,7 +128,7 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.SingleCorridor();
-        var npcId = world.SpawnNpc(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new EntityId(0u), new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
         var rng = new Rng(Seed);
 
@@ -150,9 +150,9 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.SingleCorridor();
-        var npcId = world.SpawnNpc(new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new EntityId(0), new TilePosition(2, 2));
         var npc = world.GetEntity(npcId)!;
-        var playerId = world.SpawnPlayer(new TilePosition(2, 1));
+        var playerId = world.SpawnPlayer(new EntityId(1), new TilePosition(2, 1));
         var rng = new Rng(Seed);
 
         var commands = Enumerable
@@ -180,8 +180,8 @@ public sealed class AiTest
     {
         // Arrange
         var world = TestWorlds.SingleCorridor();
-        var npcId = world.SpawnNpc(new TilePosition(2, 2));
-        world.SpawnPlayer(new TilePosition(2, 1));
+        var npcId = world.SpawnNpc(new EntityId(0), new TilePosition(2, 2));
+        world.SpawnPlayer(new EntityId(1), new TilePosition(2, 1));
         var test = new TestSimulation(world, Seed);
 
         // Act

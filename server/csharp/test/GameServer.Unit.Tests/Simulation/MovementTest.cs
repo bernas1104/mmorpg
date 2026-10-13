@@ -46,10 +46,10 @@ public sealed class MovementTest
     public void GivenPlayerAtStartPosition_WhenMovingNorth_ThenPlayerMovesToExpectedPosition()
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(10, 10));
+        var playerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(10, 10));
         var moveCommand = new MoveCommand(playerId, Direction.North);
 
-        _simulation.Enqueue(moveCommand);
+        _simulation.EnqueueCommand(moveCommand);
 
         var expectedPosition = new TilePosition(10, 9);
 
@@ -70,10 +70,10 @@ public sealed class MovementTest
     public void GivenPlayerAtStartPosition_WhenMovingIntoNonWalkableTile_ThenPlayerDoesNotMove(Direction direction)
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(2, 2));
+        var playerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
         var moveCommand = new MoveCommand(playerId, direction);
 
-        _simulation.Enqueue(moveCommand);
+        _simulation.EnqueueCommand(moveCommand);
 
         var expectedPosition = new TilePosition(2, 2);
 
@@ -90,10 +90,10 @@ public sealed class MovementTest
     public void GivenPlayerAtStartPosition_WhenMovingOutOfBounds_ThenPlayerDoesNotMove()
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(0, 0));
+        var playerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(0, 0));
         var moveCommand = new MoveCommand(playerId, Direction.North);
 
-        _simulation.Enqueue(moveCommand);
+        _simulation.EnqueueCommand(moveCommand);
 
         var expectedPosition = new TilePosition(0, 0);
 
@@ -110,16 +110,16 @@ public sealed class MovementTest
     public void GivenPlayerAtStartPosition_WhenMovingWithinCooldown_ThenPlayerDoesNotMove()
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(10, 10));
+        var playerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(10, 10));
         var moveCommand = new MoveCommand(playerId, Direction.North);
 
-        _simulation.Enqueue(moveCommand);
+        _simulation.EnqueueCommand(moveCommand);
         _simulation.Tick();
 
         var expectedPosition = new TilePosition(10, 9);
 
         // Act
-        _simulation.Enqueue(moveCommand);
+        _simulation.EnqueueCommand(moveCommand);
         _simulation.Tick();
 
         // Assert
@@ -132,7 +132,7 @@ public sealed class MovementTest
     public void GivenPlayerWhoseCooldownHasElapsed_WhenMovingAgain_ThenPlayerMoves()
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(10, 10));
+        var playerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(10, 10));
 
         // Act & Assert -- the first move succeeds and sets the cooldown
         Movement.TryMove(_world, playerId, Direction.North, currentTick: 0)
@@ -162,7 +162,7 @@ public sealed class MovementTest
     public void GivenDeadPlayer_WhenMoving_ThenReturnsEntityDead()
     {
         // Arrange
-        var deadPlayerId = _world.SpawnPlayer(new TilePosition(5, 5));
+        var deadPlayerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(5, 5));
         var deadPlayer = _world.GetEntity(deadPlayerId);
         deadPlayer!.TakeDamage(deadPlayer.Health);
 

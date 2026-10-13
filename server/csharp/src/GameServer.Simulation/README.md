@@ -68,18 +68,21 @@ across platforms and JIT settings, and a tile grid does not need it.
 1. **Think** — `Ai.Think` runs once per alive NPC, in ascending `EntityId` order, and enqueues
    the commands the NPCs want. It runs at the *top* of the tick, so NPC commands join this
    tick's batch, not the next one's.
-2. **Drain** — the command queue is emptied into a batch. A command enqueued mid-tick is
+2. **Host events** — host events enqueued for this tick (e.g. `PlayerSpawned`, `PlayerDespawned`)
+   are drained and processed in arrival order (by sequence). Host events are applied at the top
+   of the tick, before commands, mirroring the live admission order.
+3. **Drain** — the command queue is emptied into a batch. A command enqueued mid-tick is
    processed on the next tick; the think pass is the top of a tick, not the middle of one.
-3. **Sort** — the batch is ordered by `CommandPhase` first (every move resolves before any
+4. **Sort** — the batch is ordered by `CommandPhase` first (every move resolves before any
    attack, so a move-then-attack in one tick attacks from the post-move tile), then by arrival
    `Sequence`. **The declaration order of `CommandPhase` is load-bearing**: `Move` before
    `Attack` *is* the rule "movement resolves before combat". Reordering the enum silently
    changes tick semantics without failing any test.
-4. **Apply** — each command is dispatched: `Movement.TryMove` or `Combat.TryAttack` validate
+5. **Apply** — each command is dispatched: `Movement.TryMove` or `Combat.TryAttack` validate
    against authoritative state and return a result (`MoveResult` / `AttackResult`), which is
    logged. Applied / rejected-invalid / rejected-by-rule is the three-outcome vocabulary of
    Milestone 5; the log line is the primary debugging tool.
-5. **Lifecycle** — dead entities' corpse windows tick down; expired corpses are removed; then
+6. **Lifecycle** — dead entities' corpse windows tick down; expired corpses are removed; then
    the tick counter advances.
 
 Arrival order across sources is a consequence of phase 1: anything enqueued from outside
@@ -106,8 +109,8 @@ number. When it reaches zero the entity is marked `Removed` and swept by
 ## Snapshots
 
 `WorldSnapshot` is the external representation of world state: a `MapSnapshot` (width, height,
-and walkability as a plain string of `.`/`#` rows), the `IdCounter`, and one `EntitySnapshot`
-per entity. Everything in it is an immutable record of plain data — nothing holds a live `Map`,
+and walkability as a plain string of `.`/`#` rows), and one `EntitySnapshot` per entity.
+Everything in it is an immutable record of plain data — nothing holds a live `Map`,
 `World`, or `Entity` reference, so a snapshot survives later world changes untouched and
 compares structurally. `MapSnapshot` and `EntitySnapshot` are records, and `WorldSnapshot`
 overrides equality to sequence-compare its entity list; a plain record would compare that list
@@ -151,7 +154,7 @@ else. It is not built now because it would mean guessing at what the network pha
 | Path | Role |
 | --- | --- |
 | `Simulation.cs` | Tick orchestration: think → drain → sort → apply → lifecycle; owns the generator; log sink |
-| `World.cs` | Authoritative state container; ID allocation; spawn; deterministic ordered access; snapshot reconstruction |
+| `World.cs` | Authoritative state container; spawn with externally provided IDs; deterministic ordered access; snapshot reconstruction |
 | `Rng.cs` | Hand-rolled xorshift64; seed handling (zero-seed remap) and draw primitives |
 | `SimulationConstants.cs` | `TickDurationMs` (consumed by CLI pacing) |
 | `Grid/Map.cs` | Tile grid; walkability and bounds queries; `MapSnapshot` conversion |
@@ -167,6 +170,10 @@ else. It is not built now because it would mean guessing at what the network pha
 | `Commands/MoveCommand.cs`, `Commands/AttackCommand.cs` | The two intents |
 | `Commands/CommandQueue.cs` | Per-tick queue; stamps monotonic arrival `Sequence` (+ `QueuedCommand`) |
 | `Commands/CommandLogEntry.cs` | `(Tick, Command)` — the replay log entry |
+| `Events/HostEvent.cs` | Abstract base for host actions (spawn/despawn) that must be replayed in order |
+| `Events/PlayerSpawned.cs`, `Events/PlayerDespawned.cs` | Concrete host events, carrying exact `EntityId` and positions |
+| `Events/HostEventQueue.cs` | Per-tick host event queue; stamps arrival sequence for deterministic ordering |
+| `Events/HostEventLogEntry.cs` | `(Tick, HostEvent)` — host event replay log entry |
 | `Movement/Movement.cs` | `TryMove` — the sole movement authority: bounds, walkability, occupancy, cooldown |
 | `Movement/MoveResult.cs` | Movement outcome vocabulary |
 | `Combat/Combat.cs` | `TryAttack` — Chebyshev range, damage, attack cooldown |
@@ -193,3 +200,4 @@ contains, since a child namespace shadows the same-named type in name lookup.
 - Chunks/regions, spatial indexes — revisit only when full-map iteration is a measured problem
 - ECS — revisit only if entity-kind complexity actually becomes painful
 - Threading — single-threaded tick processing is sufficient at this scale
+- Automated ID generation — currently IDs must be supplied externally; will be added outside the simulation when needed

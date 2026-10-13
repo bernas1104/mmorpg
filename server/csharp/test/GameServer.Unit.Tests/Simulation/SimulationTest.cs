@@ -25,7 +25,7 @@ public sealed class SimulationTest
     {
         // Arrange
         var test = CreateTestSimulation();
-        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
+        test.Simulation.EnqueueCommand(new MoveCommand(new EntityId(0), Direction.North));
 
         // Act
         var firstTick = test.Tick();
@@ -44,10 +44,10 @@ public sealed class SimulationTest
         var test = CreateTestSimulation();
 
         // Act
-        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.North));
+        test.Simulation.EnqueueCommand(new MoveCommand(new EntityId(0), Direction.North));
         var firstTick = test.Tick();
 
-        test.Simulation.Enqueue(new MoveCommand(new EntityId(0), Direction.South));
+        test.Simulation.EnqueueCommand(new MoveCommand(new EntityId(0), Direction.South));
         var secondTick = test.Tick();
 
         // Assert
@@ -69,7 +69,7 @@ public sealed class SimulationTest
             new(new EntityId(1), Direction.North),
         };
 
-        foreach (var command in commands) test.Simulation.Enqueue(command);
+        foreach (var command in commands) test.Simulation.EnqueueCommand(command);
 
         // Act
         var tick = test.Tick();
@@ -90,15 +90,15 @@ public sealed class SimulationTest
     {
         // Arrange
         var world = new World(Map.FromRows(TestMaps.GetWallBoundedTiles(10, 10)));
-        var playerId = world.SpawnPlayer(new TilePosition(5, 5));
-        var npcId = world.SpawnNpc(new TilePosition(5, 7));
+        var playerId = world.SpawnPlayer(new EntityId(0), new TilePosition(5, 5));
+        var npcId = world.SpawnNpc(new EntityId(1), new TilePosition(5, 7));
         world.GetEntity(npcId)!.UpdateNextMoveAllowedTick(1000);
         var test = new TestSimulation(world, 1);
 
         // Act -- the attack is enqueued FIRST. If arrival order decided phases, it would resolve
         // from (5,5) and fail on range; the phase sort must move the player before it attacks.
-        test.Simulation.Enqueue(new AttackCommand(playerId, npcId));
-        test.Simulation.Enqueue(new MoveCommand(playerId, Direction.South));
+        test.Simulation.EnqueueCommand(new AttackCommand(playerId, npcId));
+        test.Simulation.EnqueueCommand(new MoveCommand(playerId, Direction.South));
         test.Tick();
 
         // Assert

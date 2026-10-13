@@ -17,7 +17,7 @@ public sealed class WorldTest
         // Assert
         world.Should().NotBeNull();
         world.Map.Should().Be(map);
-        world.IdCounter.Should().Be(0);
+        // IdCounter removed - IDs are now externally provided
     }
 
     [Fact]
@@ -29,10 +29,10 @@ public sealed class WorldTest
         var tilePosition = new TilePosition(7, 13);
 
         // Act
-        var playerId = world.SpawnPlayer(tilePosition);
+        var playerId = world.SpawnPlayer(new EntityId(0u), tilePosition);
 
         // Assert
-        playerId.Value.Should().Be(0);
+        playerId.Value.Should().Be(0u);
 
         var player = world.GetEntity(playerId);
         player.Should().NotBeNull();
@@ -50,8 +50,8 @@ public sealed class WorldTest
         // Act && Assert
         for (int i = 0; i < 5; i++)
         {
-            var playerId = world.SpawnPlayer(tilePosition);
-            playerId.Value.Should().Be(i);
+            var playerId = world.SpawnPlayer(new EntityId((uint)i), tilePosition);
+            playerId.Value.Should().Be((uint)i);
         }
     }
 
@@ -70,7 +70,7 @@ public sealed class WorldTest
         var invalidTilePosition = new TilePosition(x, y);
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => world.SpawnPlayer(invalidTilePosition));
+        Assert.Throws<ArgumentOutOfRangeException>(() => world.SpawnPlayer(new EntityId(0), invalidTilePosition));
     }
 
     [Fact]
@@ -94,11 +94,11 @@ public sealed class WorldTest
         var map = Map.FromRows(TestMaps.GetWallBoundedTiles(20, 20));
         var world = new World(map);
 
-        world.SpawnNpc(new TilePosition(3, 3));
-        world.SpawnPlayer(new TilePosition(5, 5));
-        world.SpawnNpc(new TilePosition(7, 7));
-        world.SpawnPlayer(new TilePosition(9, 9));
-        world.SpawnNpc(new TilePosition(11, 11));
+        world.SpawnNpc(new EntityId(0), new TilePosition(3, 3));
+        world.SpawnPlayer(new EntityId(1), new TilePosition(5, 5));
+        world.SpawnNpc(new EntityId(2), new TilePosition(7, 7));
+        world.SpawnPlayer(new EntityId(3), new TilePosition(9, 9));
+        world.SpawnNpc(new EntityId(4), new TilePosition(11, 11));
 
         // Act
         var npcs = world.GetAliveNpcs().ToList();

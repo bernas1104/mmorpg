@@ -20,12 +20,12 @@ public sealed class CombatTest
     public void GivenAttackerAndTarget_WhenAttackerIsSameAsTarget_ThenAttackFails()
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
         var targetId = attackerId;
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
-        _simulation.Enqueue(attackCommand);
+        _simulation.EnqueueCommand(attackCommand);
 
         // Act
         _simulation.Tick();
@@ -59,14 +59,14 @@ public sealed class CombatTest
     )
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
         var targetId = targetKind == EntityKind.Player
-            ? _world.SpawnPlayer(new TilePosition(targetX, targetY))
-            : _world.SpawnNpc(new TilePosition(targetX, targetY));
+            ? _world.SpawnPlayer(new EntityId(1), new TilePosition(targetX, targetY))
+            : _world.SpawnNpc(new EntityId(2), new TilePosition(targetX, targetY));
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
-        _simulation.Enqueue(attackCommand);
+        _simulation.EnqueueCommand(attackCommand);
 
         // Act
         _simulation.Tick();
@@ -99,12 +99,12 @@ public sealed class CombatTest
     )
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
-        var targetId = _world.SpawnPlayer(new TilePosition(targetX, targetY));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
+        var targetId = _world.SpawnPlayer(new EntityId(1), new TilePosition(targetX, targetY));
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
-        _simulation.Enqueue(attackCommand);
+        _simulation.EnqueueCommand(attackCommand);
 
         // Act
         _simulation.Tick();
@@ -118,17 +118,17 @@ public sealed class CombatTest
     public void GivenAttackerAndTarget_WhenAttackerIsExhausted_ThenAttackFails()
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
-        var targetId = _world.SpawnPlayer(new TilePosition(2, 3));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
+        var targetId = _world.SpawnPlayer(new EntityId(1u), new TilePosition(2, 3));
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
         // Act
-        _simulation.Enqueue(attackCommand);
+        _simulation.EnqueueCommand(attackCommand);
         _simulation.Tick();
 
         // Attempt to attack again immediately, attacker should be exhausted
-        _simulation.Enqueue(attackCommand);
+        _simulation.EnqueueCommand(attackCommand);
         _simulation.Tick();
 
         // Assert
@@ -140,8 +140,8 @@ public sealed class CombatTest
     public void GivenAttackerAndTarget_WhenTargetHealthGoesBelowZero_ThenHealthIsClamped()
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(2, 2));
-        var targetId = _world.SpawnPlayer(new TilePosition(2, 3));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
+        var targetId = _world.SpawnPlayer(new EntityId(1u), new TilePosition(2, 3));
 
         var attackCommand = new AttackCommand(attackerId, targetId);
 
@@ -149,7 +149,7 @@ public sealed class CombatTest
         for (int i = 0; i < Combat.AttackCooldownTicks * 11; i++) // Attack multiple times to ensure target health goes below zero
         {
             if (i % Combat.AttackCooldownTicks == 0)
-                _simulation.Enqueue(attackCommand);
+                _simulation.EnqueueCommand(attackCommand);
 
             _simulation.Tick();
         }
@@ -163,11 +163,11 @@ public sealed class CombatTest
     public void GivenDeadAttacker_WhenAttacking_ThenAttackFails()
     {
         // Arrange
-        var deadAttackerId = _world.SpawnPlayer(new TilePosition(3, 3));
+        var deadAttackerId = _world.SpawnPlayer(new EntityId(0u), new TilePosition(3, 3));
         var deadAttacker = _world.GetEntity(deadAttackerId);
         deadAttacker!.TakeDamage(deadAttacker.Health);
 
-        var targetId = _world.SpawnPlayer(new TilePosition(3, 4));
+        var targetId = _world.SpawnPlayer(new EntityId(1u), new TilePosition(3, 4));
 
         // Act
         var result = Combat.TryAttack(_world, deadAttackerId, targetId, 0);
@@ -180,8 +180,8 @@ public sealed class CombatTest
     public void GivenDeadTarget_WhenAttacked_ThenAttackFails()
     {
         // Arrange
-        var attackerId = _world.SpawnPlayer(new TilePosition(3, 3));
-        var targetId = _world.SpawnPlayer(new TilePosition(3, 4));
+        var attackerId = _world.SpawnPlayer(new EntityId(0), new TilePosition(3, 3));
+        var targetId = _world.SpawnPlayer(new EntityId(1), new TilePosition(3, 4));
         var target = _world.GetEntity(targetId);
         target!.TakeDamage(target.Health);
 

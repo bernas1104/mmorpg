@@ -20,8 +20,8 @@ public sealed class CollisionTest
     public void GivenOccupiedTarget_WhenMoving_ThenTheMoveIsRejectedAndTheEntityDoesNotMove()
     {
         // Arrange
-        var playerId = _world.SpawnPlayer(new TilePosition(5, 5));
-        _world.SpawnPlayer(new TilePosition(5, 4));
+        var playerId = _world.SpawnPlayer(new EntityId(0u), new TilePosition(5, 5));
+        _world.SpawnPlayer(new EntityId(1u), new TilePosition(5, 4));
 
         // Act
         var result = Movement.TryMove(_world, playerId, Direction.North, 0);
@@ -36,8 +36,8 @@ public sealed class CollisionTest
     public void GivenTwoPlayersTargetingTheSameTile_WhenBothMoveDirectly_ThenTheLoserIsRejectedBecauseTheTargetIsOccupied()
     {
         // Arrange
-        var winnerId = _world.SpawnPlayer(new TilePosition(5, 4));
-        var loserId = _world.SpawnPlayer(new TilePosition(5, 6));
+        var winnerId = _world.SpawnPlayer(new EntityId(0u), new TilePosition(5, 4));
+        var loserId = _world.SpawnPlayer(new EntityId(1u), new TilePosition(5, 6));
 
         // Act
         var winnerResult = Movement.TryMove(_world, winnerId, Direction.South, 0);
@@ -55,15 +55,15 @@ public sealed class CollisionTest
     public void GivenTwoPlayersTargetingTheSameTile_WhenBothMoveInOneTick_ThenFirstEnqueuedWinsRegardlessOfEntityId()
     {
         // Arrange
-        var secondEnqueuedId = _world.SpawnPlayer(new TilePosition(5, 4));
-        var firstEnqueuedId = _world.SpawnPlayer(new TilePosition(5, 6));
+        var secondEnqueuedId = _world.SpawnPlayer(new EntityId(0), new TilePosition(5, 4));
+        var firstEnqueuedId = _world.SpawnPlayer(new EntityId(1), new TilePosition(5, 6));
 
         // Guard: fail loudly rather than silently stop testing id-vs-arrival order if a
         // future edit to this fixture reverses the spawns.
         secondEnqueuedId.Value.Should().BeLessThan(firstEnqueuedId.Value);
 
-        _simulation.Enqueue(new MoveCommand(firstEnqueuedId, Direction.North));
-        _simulation.Enqueue(new MoveCommand(secondEnqueuedId, Direction.South));
+        _simulation.EnqueueCommand(new MoveCommand(firstEnqueuedId, Direction.North));
+        _simulation.EnqueueCommand(new MoveCommand(secondEnqueuedId, Direction.South));
 
         // Act
         _simulation.Tick();
@@ -84,12 +84,12 @@ public sealed class CollisionTest
         {
             // Arrange
             var world = TestWorlds.SingleCorridor();
-            var npcId = world.SpawnNpc(new TilePosition(2, 2));
-            var playerId = world.SpawnPlayer(new TilePosition(1, 1));
+            var npcId = world.SpawnNpc(new EntityId(0), new TilePosition(2, 2));
+            var playerId = world.SpawnPlayer(new EntityId(1), new TilePosition(1, 1));
             var test = new TestSimulation(world, seed);
 
             // Act
-            test.Simulation.Enqueue(new MoveCommand(playerId, Direction.East));
+            test.Simulation.EnqueueCommand(new MoveCommand(playerId, Direction.East));
             var log = test.Tick(1);
 
             var npcMoved = log.Contains($"received MoveCommand(EntityId: {npcId}");

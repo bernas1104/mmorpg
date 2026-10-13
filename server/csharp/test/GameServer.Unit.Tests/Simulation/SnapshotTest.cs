@@ -10,8 +10,8 @@ public sealed class SnapshotTest
     {
         // Arrange
         var world = TestWorlds.Open(5, 5);
-        var playerId = world.SpawnPlayer(new TilePosition(2, 2));
-        var npcId = world.SpawnNpc(new TilePosition(3, 2));
+        var playerId = world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
+        var npcId = world.SpawnNpc(new EntityId(1), new TilePosition(3, 2));
         world.GetEntity(npcId)!.TakeDamage(30);
 
         // Act
@@ -20,7 +20,7 @@ public sealed class SnapshotTest
         // Assert
         snapshot.Map.Width.Should().Be(5);
         snapshot.Map.Height.Should().Be(5);
-        snapshot.IdCounter.Should().Be(2);
+        // IdCounter removed from snapshot; IDs are externally managed
         snapshot.Entities.Should().HaveCount(2);
 
         var player = snapshot.Entities.Single(e => e.Id == playerId);
@@ -38,7 +38,7 @@ public sealed class SnapshotTest
     {
         // Arrange
         var world = TestWorlds.Open(5, 5);
-        var playerId = world.SpawnPlayer(new TilePosition(2, 2));
+        var playerId = world.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
         var snapshot = WorldSnapshot.Of(world);
 
         // Act
@@ -53,10 +53,10 @@ public sealed class SnapshotTest
     public void GivenTwoWorldsInTheSameState_WhenSnapshot_ThenTheSnapshotsAreEqual()
     {
         var first = TestWorlds.Open(5, 5);
-        first.SpawnPlayer(new TilePosition(2, 2));
+        first.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
 
         var second = TestWorlds.Open(5, 5);
-        second.SpawnPlayer(new TilePosition(2, 2));
+        second.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
 
         WorldSnapshot.Of(first).Should().Be(WorldSnapshot.Of(second));
     }
@@ -65,10 +65,10 @@ public sealed class SnapshotTest
     public void GivenTwoWorldsInDifferentStates_WhenSnapshot_ThenTheSnapshotsAreNotEqual()
     {
         var first = TestWorlds.Open(5, 5);
-        first.SpawnPlayer(new TilePosition(2, 2));
+        first.SpawnPlayer(new EntityId(0), new TilePosition(2, 2));
 
         var second = TestWorlds.Open(5, 5);
-        second.SpawnPlayer(new TilePosition(3, 2));
+        second.SpawnPlayer(new EntityId(0), new TilePosition(3, 2));
 
         WorldSnapshot.Of(first).Should().NotBe(WorldSnapshot.Of(second));
     }
