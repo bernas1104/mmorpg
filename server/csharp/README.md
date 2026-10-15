@@ -19,12 +19,15 @@ by convention.
 | Project                      | Role                                                                                                           |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `src/GameServer.Simulation`  | Authoritative world state and the rules that change it. Zero package references.                               |
+| `src/GameServer.Server`      | Host shell: the only door to the sim thread (`Ingress`), the only key-holder (`GameHost`), the only clock (`FixedTimestepLoop`). References Simulation only. |
 | `src/GameServer.Cli`         | Headless runner: paces the tick loop, reads commands from stdin, prints tick logs. References Simulation only. |
-| `test/GameServer.Unit.Tests` | xUnit suite, one file per concern — map, world, movement, collision, combat, lifecycle, AI, commands, determinism, replay, snapshots — over shared builders in `Support/`. References Simulation only. |
+| `test/GameServer.Unit.Tests` | xUnit suite, one file per concern — map, world, movement, collision, combat, lifecycle, AI, commands, determinism, replay, snapshots, and the host shell — over shared builders in `Support/`. References Simulation and Server. |
 
 The render-independence boundary is a project-reference-level fact: `GameServer.Simulation`
 has no `PackageReference` to any graphics library, ever, and the CLI references nothing else.
-If `dotnet build` succeeds on a machine with no graphics stack, the boundary is intact.
+If `dotnet build` succeeds on a machine with no graphics stack, the boundary is intact. The
+ownership boundary is the same kind of fact, one layer out: `GameServer.Server` references
+`GameServer.Simulation`, and the simulation never learns that threads or sockets exist.
 
 The simulation project is one namespace (`GameServer.Simulation`) in folders grouped by domain
 concept (`Grid/`, `Entities/`, `Commands/`, `Movement/`, `Combat/`, `Ai/`, `Replay/`,
@@ -82,6 +85,37 @@ Roadmap: [`.plans/phase-1-plan.md`](.plans/phase-1-plan.md). Milestones 0–12 a
 
 ---
 
+## Status — networking phase, milestone M0
+
+Roadmap: [`.plans/milestone-m0-plan.md`](.plans/milestone-m0-plan.md). **Complete.**
+
+M0 made replay trustworthy and built the host shell that a network layer will one day own.
+Three correctness fixes inside the simulation, then the shell on top:
+
+- **Replay off-by-one fixed and made assertable** — `RecordedRun`'s tick field is now
+  `TickCount`, a *length* ("run N ticks"), not the last tick's number; replay compares its own
+  freshly computed final tick against the live one instead of a tautology.
+- **`World.DespawnPlayer`** — a disconnect is a host action, not a gameplay death: no corpse,
+  no countdown, no interference with `RemoveExpiredCorpses`. Unknown ids report `false`;
+  `IdCounter` never decrements, so ids are never-reused identities.
+- **The `HostEvent` stream** — `PlayerSpawned`/`PlayerDespawned` form a second, parallel
+  record of *server actions* that replay merges with the command log per tick (host events
+  first, in recorded order, then commands) — preserving the live interleaving of admission and
+  intent.
+- **`GameServer.Server`, the host shell** — [`Ingress`](src/GameServer.Server/README.md) (the
+  bounded, non-blocking only door), `GameHost` (drain → admit → `Tick()` → publish, with a
+  loud wrong-thread/re-entrancy guard), and `FixedTimestepLoop`/`TickScheduler` (the only
+  clock: fake-clock-testable, catch-up cap at 5 ticks, drops backlog instead of chasing it).
+- **Behavior tests** — fake-client producers (N × M commands drain exactly once each, in
+  producer order), the two eligibility rules (pushed before `Advance` → this tick; during
+  `Tick()` → next), host-admitted commands outranking same-tick NPC commands, and both guard
+  failures.
+
+The CLI still drives `Simulation` directly — nothing here is migrated onto the host shell yet;
+that is deliberately deferred so the seam is proven in isolation first.
+
+---
+
 ## Architecture
 
 ```
@@ -117,9 +151,11 @@ rules. Because the think pass runs at the *top* of a tick, externally enqueued c
 carry lower ordinals than NPC commands raised that tick, which is why a player wins a contested
 tile without anyone hard-coding that precedence.
 
-Time is a fixed 20 Hz tick (`SimulationConstants.TickDurationMs`). `Simulation.Tick()` never
-sleeps and never reads a clock — pacing lives entirely in the CLI, which uses a
-Stopwatch-based accumulator with a catch-up cap. Every gameplay timer is a `long` tick count.
+Time is a fixed 20 Hz tick (`TickScheduler.DefaultTickDurationMs`, 50ms). `Simulation.Tick()`
+never sleeps and never reads a clock — pacing lives entirely in the CLI, which feeds elapsed
+time to a `TickScheduler` accumulator with a catch-up cap. Every gameplay timer is a `long`
+tick count. The scheduler and the loop that runs it live in `GameServer.Server`, where the
+only clock dependency is an injected `TimeProvider`.
 
 ### The invariants
 
@@ -165,4 +201,6 @@ prediction, and third-party packages beyond the test framework are all postponed
 The full list and rationale are in the roadmap's "Decisions to Deliberately Postpone" section.
 `Command` in and `WorldSnapshot` out are the two seams a future network layer attaches to: the
 output side already exists as fully plain, immutable data (`WorldSnapshot.Of(world)`, with
-`World.CreateFromSnapshot` as the inverse), but nothing serializes or transports it yet.
+`World.CreateFromSnapshot` as the inverse), but nothing serializes or transports it yet. The
+host shell that will own that transport now exists as `GameServer.Server` — its `Publish` step
+is a stub awaiting exactly that work.

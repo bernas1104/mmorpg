@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/GameServer.Cli/GameServer.Cli.csproj" />
+    <Project Path="src/GameServer.Client/GameServer.Client.csproj" />
+    <Project Path="src/GameServer.Network/GameServer.Network.csproj" />
+    <Project Path="src/GameServer.Server/GameServer.Server.csproj" />
     <Project Path="src/GameServer.Simulation/GameServer.Simulation.csproj" />
   </Folder>
   <Folder Name="/test/">

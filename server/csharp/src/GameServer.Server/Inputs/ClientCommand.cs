@@ -1,0 +1,5 @@
+using GameServer.Simulation;
+
+namespace GameServer.Server;
+
+public sealed record ClientCommandInput(Command Command) : ClientInput(ClientInputType.Command);

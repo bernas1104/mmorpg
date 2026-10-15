@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using GameServer.Server;
 using GameServer.Simulation;
 
 string[,] mapRows = new string[,]
@@ -108,18 +109,18 @@ using PosixSignalRegistration? sigTerm = OperatingSystem.IsWindows()
     : PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx => { ctx.Cancel = true; cts.Cancel(); });
 
 var simulation = new Simulation(new World(Map.FromRows(mapRows)), seed, Console.Out);
-simulation.World.SpawnPlayer(new TilePosition(4, 4));
-simulation.World.SpawnPlayer(new TilePosition(5, 5));
-simulation.World.SpawnPlayer(new TilePosition(2, 4));
-simulation.World.SpawnNpc(new TilePosition(9, 9));
-simulation.World.SpawnNpc(new TilePosition(10, 10));
+simulation.World.SpawnPlayer(new EntityId(2), new TilePosition(5, 5));
+simulation.World.SpawnPlayer(new EntityId(3), new TilePosition(2, 4));
+simulation.World.SpawnNpc(new EntityId(4), new TilePosition(9, 9));
+simulation.World.SpawnNpc(new EntityId(5), new TilePosition(10, 10));
 
 var worldSnapshot = WorldSnapshot.Of(simulation.World);
 
 List<CommandLogEntry> commandLog = [];
+List<HostEvent> hostEventLog = [];
 
 const int maxCatchUpTicks = 5;
-long tickDurationTicks = Stopwatch.Frequency * SimulationConstants.TickDurationMs / 1000;
+long tickDurationTicks = Stopwatch.Frequency * TickScheduler.DefaultTickDurationMs / 1000;
 
 long previous = Stopwatch.GetTimestamp();
 long accumulator = 0;
@@ -140,7 +141,7 @@ void CommandParser(string? input)
                 return;
             }
 
-            var parsedId = int.TryParse(parts[1], out var id);
+            var parsedId = uint.TryParse(parts[1], out var id);
 
             var parsedDirection = Enum.TryParse<Direction>(parts[2], true, out var direction)
                 && Enum.IsDefined(direction);
@@ -152,7 +153,7 @@ void CommandParser(string? input)
             }
 
             var moveCommand = new MoveCommand(new EntityId(id), direction);
-            simulation.Enqueue(moveCommand);
+            simulation.EnqueueCommand(moveCommand);
             commandLog.Add(new CommandLogEntry(simulation.TickNumber, moveCommand));
             return;
         case "attack":
@@ -162,8 +163,8 @@ void CommandParser(string? input)
                 return;
             }
 
-            var parsedAttackerId = int.TryParse(parts[1], out var attackerId);
-            var parsedTargetId = int.TryParse(parts[2], out var targetId);
+            var parsedAttackerId = uint.TryParse(parts[1], out var attackerId);
+            var parsedTargetId = uint.TryParse(parts[2], out var targetId);
 
             if (!parsedAttackerId || !parsedTargetId)
             {
@@ -172,14 +173,14 @@ void CommandParser(string? input)
             }
 
             var attackCommand = new AttackCommand(new EntityId(attackerId), new EntityId(targetId));
-            simulation.Enqueue(attackCommand);
+            simulation.EnqueueCommand(attackCommand);
             commandLog.Add(new CommandLogEntry(simulation.TickNumber, attackCommand));
             return;
         case "snapshot":
         case "dump":
             var snapshot = WorldSnapshot.Of(simulation.World);
             Console.WriteLine($"--- Snapshot @ Tick {simulation.TickNumber} ---");
-            Console.WriteLine($"Map: {snapshot.Map.Width}x{snapshot.Map.Height}, IdCounter: {snapshot.IdCounter}");
+            Console.WriteLine($"Map: {snapshot.Map.Width}x{snapshot.Map.Height}");
             Console.WriteLine($"Entities ({snapshot.Entities.Count()}):");
             foreach (var entity in snapshot.Entities.OrderBy(e => e.Id.Value))
             {
@@ -318,7 +319,8 @@ var recordedRun = new RecordedRun(
     simulation.TickNumber,
     simulation.RngSeed,
     worldSnapshot,
-    commandLog
+    commandLog,
+    hostEventLog
 );
 
 var replay = new Replay(recordedRun);

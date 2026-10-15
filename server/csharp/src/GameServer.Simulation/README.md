@@ -13,7 +13,8 @@ no windowing, no logging framework, nothing. If `dotnet build` of this project a
 on a machine with no graphics stack, the boundary holds. The two seams a Phase 2 network layer
 will plug into are data, not services:
 
-- **Input seam:** `Command` records in (`Simulation.Enqueue`).
+- **Input seam:** `Command` records in (`Simulation.EnqueueCommand`) and `HostEvent` records in
+  (`Simulation.EnqueueHostEvent` — the server's own spawn/despawn actions).
 - **Output seam:** `WorldSnapshot` records out (`WorldSnapshot.Of(world)`).
 
 The simulation writes log lines to a `TextWriter?` passed at construction — silent by default;
@@ -156,7 +157,6 @@ else. It is not built now because it would mean guessing at what the network pha
 | `Simulation.cs` | Tick orchestration: think → drain → sort → apply → lifecycle; owns the generator; log sink |
 | `World.cs` | Authoritative state container; spawn with externally provided IDs; deterministic ordered access; snapshot reconstruction |
 | `Rng.cs` | Hand-rolled xorshift64; seed handling (zero-seed remap) and draw primitives |
-| `SimulationConstants.cs` | `TickDurationMs` (consumed by CLI pacing) |
 | `Grid/Map.cs` | Tile grid; walkability and bounds queries; `MapSnapshot` conversion |
 | `Grid/Tile.cs` | One tile: walkable or not |
 | `Grid/TilePosition.cs` | `int` coordinate pair; `Step` in a direction |
