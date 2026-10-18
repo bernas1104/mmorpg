@@ -1,67 +1,59 @@
-﻿using GameServer.Network;
-using GameServer.Network.BitStream;
+﻿using GameServer.Protocol;
+using GameServer.Protocol.BitStream;
 
-// using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
-// Console.WriteLine("Running game server client loop...");
+Console.WriteLine("Running game server client loop...");
 
-// try
-// {
-//     UdpSocket udpSocket = new();
-//     ReliabilitySystem reliabilitySystem = new();
+try
+{
+    Socket tcpSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    tcpSocket.Bind(new IPEndPoint(IPAddress.Any, 3001));
+    tcpSocket.Connect("127.0.0.1", 3000);
 
-//     if (!udpSocket.Bind(3001))
-//     {
-//         Console.WriteLine("Failed to bind UDP socket on port 3001");
-//         return -1;
-//     }
+    Console.WriteLine("Server listening on port 3001...");
 
-//     udpSocket.SetNonBlocking(false);
+    var out_address = string.Empty;
+    var out_port = ushort.MinValue;
+    var buffer = new byte[1024];
 
-//     Console.WriteLine("Server listening on port 3001...");
+    while (true)
+    {
+        var lineRead = Console.ReadLine();
 
-//     var out_address = string.Empty;
-//     var out_port = ushort.MinValue;
-//     var buffer = new byte[1024];
+        if (!string.IsNullOrEmpty(lineRead))
+        {
+            var message = Encoding.UTF8.GetBytes(lineRead);
+            tcpSocket.Send(Encoding.UTF8.GetBytes(lineRead));
+        }
 
-//     while (true)
-//     {
-//         var lineRead = Console.ReadLine();
+        var receivedBytes = tcpSocket.Receive(buffer);
 
-//         if (!string.IsNullOrEmpty(lineRead))
-//         {
-//             var message = Encoding.UTF8.GetBytes(lineRead);
-//             var packetToSend = reliabilitySystem.WritePacket(message);
+        if (receivedBytes > 0)
+        {
+            Console.WriteLine($"Received {receivedBytes} bytes from {out_address}:{out_port} message: {Encoding.UTF8.GetString(buffer, 0, receivedBytes)}");
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"An error occurred: {ex.Message}");
+    return -1;
+}
 
-//             udpSocket.SendTo("127.0.0.1", 3000, packetToSend);
-//         }
+return 0;
 
-//         var receivedBytes = udpSocket.ReceiveFrom(ref buffer, ref out_address, ref out_port);
+// var bitWriter = new BitWriter();
 
-//         if (receivedBytes > 0)
-//         {
-//             var packetRead = reliabilitySystem.ReadPacket(buffer);
-//             Console.WriteLine($"Received {receivedBytes} bytes from {out_address}:{out_port} message: {Encoding.UTF8.GetString(packetRead, 0, packetRead.Length)}");
-//         }
-//     }
-// }
-// catch (Exception ex)
-// {
-//     Console.WriteLine($"An error occurred: {ex.Message}");
-//     return -1;
-// }
+// bitWriter.WriteBool(true);
+// bitWriter.Write(4, 8);
 
-// return 0;
+// var bitReader = new BitReader(bitWriter.GetData());
 
-var bitWriter = new BitWriter();
+// var readBool = bitReader.ReadBool();
+// var readInt = bitReader.Read(out int num, 8);
 
-bitWriter.WriteBool(true);
-bitWriter.Write(4, 8);
-
-var bitReader = new BitReader(bitWriter.GetData());
-
-var readBool = bitReader.ReadBool();
-var readInt = bitReader.Read(out int num, 8);
-
-Console.WriteLine(readBool);
-Console.WriteLine(readInt ? num : "Error while reading the integer");
+// Console.WriteLine(readBool);
+// Console.WriteLine(readInt ? num : "Error while reading the integer");

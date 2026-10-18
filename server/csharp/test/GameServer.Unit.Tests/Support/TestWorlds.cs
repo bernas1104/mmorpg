@@ -1,6 +1,6 @@
-namespace GameServer.Unit.Tests.Support;
+using GameServer.Sim;
 
-using GameServer.Simulation;
+namespace GameServer.Unit.Tests.Support;
 
 public static class TestWorlds
 {

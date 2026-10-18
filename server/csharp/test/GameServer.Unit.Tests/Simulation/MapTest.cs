@@ -1,4 +1,4 @@
-using GameServer.Simulation;
+using GameServer.Sim;
 using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;

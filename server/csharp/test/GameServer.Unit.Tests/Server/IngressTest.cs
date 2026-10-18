@@ -1,7 +1,7 @@
-using GameServer.Server;
-using GameServer.Simulation;
-
 namespace GameServer.Unit.Tests.Server;
+
+using GameServer.Server;
+using GameServer.Sim;
 
 public sealed class IngressTest
 {

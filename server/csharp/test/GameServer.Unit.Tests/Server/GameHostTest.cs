@@ -1,12 +1,12 @@
 using System.Text;
 
 using GameServer.Server;
-using GameServer.Simulation;
+using GameServer.Sim;
 using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Server;
 
-using Simulation = GameServer.Simulation.Simulation;
+using Simulation = Sim.Simulation;
 
 public sealed class GameHostTest
 {

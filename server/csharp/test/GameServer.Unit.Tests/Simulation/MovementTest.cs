@@ -1,9 +1,8 @@
-using GameServer.Simulation;
-using GameServer.Unit.Tests.Support;
+using GameServer.Sim;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-using Simulation = GameServer.Simulation.Simulation;
+using Simulation = Sim.Simulation;
 
 public sealed class MovementTest
 {

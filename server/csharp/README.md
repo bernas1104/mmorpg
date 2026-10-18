@@ -18,18 +18,18 @@ by convention.
 
 | Project                      | Role                                                                                                           |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `src/GameServer.Simulation`  | Authoritative world state and the rules that change it. Zero package references.                               |
+| `src/GameServer.Sim`  | Authoritative world state and the rules that change it. Zero package references.                               |
 | `src/GameServer.Server`      | Host shell: the only door to the sim thread (`Ingress`), the only key-holder (`GameHost`), the only clock (`FixedTimestepLoop`). References Simulation only. |
 | `src/GameServer.Cli`         | Headless runner: paces the tick loop, reads commands from stdin, prints tick logs. References Simulation only. |
 | `test/GameServer.Unit.Tests` | xUnit suite, one file per concern — map, world, movement, collision, combat, lifecycle, AI, commands, determinism, replay, snapshots, and the host shell — over shared builders in `Support/`. References Simulation and Server. |
 
-The render-independence boundary is a project-reference-level fact: `GameServer.Simulation`
+The render-independence boundary is a project-reference-level fact: `GameServer.Sim`
 has no `PackageReference` to any graphics library, ever, and the CLI references nothing else.
 If `dotnet build` succeeds on a machine with no graphics stack, the boundary is intact. The
 ownership boundary is the same kind of fact, one layer out: `GameServer.Server` references
-`GameServer.Simulation`, and the simulation never learns that threads or sockets exist.
+`GameServer.Sim`, and the simulation never learns that threads or sockets exist.
 
-The simulation project is one namespace (`GameServer.Simulation`) in folders grouped by domain
+The simulation project is one namespace (`GameServer.Sim`) in folders grouped by domain
 concept (`Grid/`, `Entities/`, `Commands/`, `Movement/`, `Combat/`, `Ai/`, `Replay/`,
 `Snapshots/`); folders are for navigation only, never namespaces.
 
@@ -160,7 +160,7 @@ only clock dependency is an injected `TimeProvider`.
 ### The invariants
 
 These are enforced by review and tests, not by the compiler. The full reasoning lives in
-[`src/GameServer.Simulation/README.md`](src/GameServer.Simulation/README.md); the short form:
+[`src/GameServer.Sim/README.md`](src/GameServer.Sim/README.md); the short form:
 
 - **Time is tick counts.** No `DateTime`, `Stopwatch`, or `Environment.TickCount` inside the
   simulation. A test can call `Tick()` a thousand times in microseconds.

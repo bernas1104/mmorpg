@@ -2,7 +2,7 @@
 
 Polyglot monorepo with three independent parts — each has its own toolchain and is built from its own directory:
 
-- `server/csharp` — the real project: a deterministic, headless, server-authoritative game simulation (.NET 10). See its `README.md` and `src/GameServer.Simulation/README.md` for the full invariants.
+- `server/csharp` — the real project: a deterministic, headless, server-authoritative game simulation (.NET 10). See its `README.md` and `src/GameServer.Sim/README.md` for the full invariants.
 - `client/` — Odin + raylib prototype (entrypoint `main.odin`); format with `odinfmt` (tabs, width 100 per `odinfmt.json`).
 - `server/go` — placeholder stub, nothing implemented.
 
@@ -32,7 +32,7 @@ Conventional Commits are enforced by a husky `commit-msg` hook via commitlint (`
 - `.plans/` is gitignored (`**/.plans/` in the root `.gitignore`), so the roadmap (`server/csharp/.plans/phase-1-plan.md`) and milestone notes exist only on machines that have them. Don't assume other checkouts have them; don't rely on them being in git history.
 - `bin/`/`obj/` and `node_modules/` are not all in the root `.gitignore` — some paths are ignored by `server/csharp/.gitignore`; add ignore rules in the right file.
 
-## Simulation determinism invariants (GameServer.Simulation)
+## Simulation determinism invariants (GameServer.Sim)
 
 These are project rules, not style preferences — breaking them silently breaks reproducibility, and none fail loudly. Enforced by review and tests:
 
@@ -41,7 +41,7 @@ These are project rules, not style preferences — breaking them silently breaks
 - **Never iterate entities via raw `Dictionary` enumeration.** Use `World.GetAll(kind)` — ascending `EntityId` order. Iteration order decides RNG draw sequence and is part of the simulation's identity.
 - **Commands are the only way to change the world.** `Movement.TryMove` is the sole movement authority; `Ai.Think` is pure and only enqueues commands. Never give NPCs a privileged path.
 - **Tile coordinates are `int`**, never `float`/`Vector2`.
-- **`GameServer.Simulation` has zero package references** — no rendering or networking deps, ever. If `dotnet build` needs a graphics stack, the boundary is broken.
+- **`GameServer.Sim` has zero package references** — no rendering or networking deps, ever. If `dotnet build` needs a graphics stack, the boundary is broken.
 - **Changing AI changes replays.** Adding/removing/reordering NPCs or any RNG draw (e.g. `WanderChance`) rewrites every subsequent RNG draw, so recorded runs only replay against identical simulation code. The seed is not the only knob.
 
 ## Repository Rules and Patterns
@@ -55,7 +55,7 @@ These are project rules, not style preferences — breaking them silently breaks
 ### File organization (C# projects)
 
 - Folders group files by **domain concept** (`Movement/`, `Combat/`, `Commands/`, `Snapshots/`, …), never by technical type — no `Enums/`, `Constants/`, `Extensions/`, `Helpers/` folders.
-- **One namespace per project** (`GameServer.Simulation`); folders organize files only. Never create a sub-namespace named after a type it contains — a child namespace shadows the same-named type in name lookup for all code in the parent namespace.
+- **One namespace per project** (`GameServer.Sim`); folders organize files only. Never create a sub-namespace named after a type it contains — a child namespace shadows the same-named type in name lookup for all code in the parent namespace.
 - **One primary type per file**, named after it. A supporting type may share its owner's file only when **all** of these hold:
   1. it is consumed only through the primary type (no independent lifecycle),
   2. the combined file stays under ~100 lines,

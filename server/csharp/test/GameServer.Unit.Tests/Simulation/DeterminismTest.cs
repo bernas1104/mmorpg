@@ -1,9 +1,10 @@
+using GameServer.Sim;
+using GameServer.Unit.Tests.Support;
+
 namespace GameServer.Unit.Tests.Simulation;
 
-using Simulation = GameServer.Simulation.Simulation;
+using Simulation = Sim.Simulation;
 
-using GameServer.Simulation;
-using GameServer.Unit.Tests.Support;
 public sealed class DeterminismTest
 {
     private const int TicksToRun = 500;

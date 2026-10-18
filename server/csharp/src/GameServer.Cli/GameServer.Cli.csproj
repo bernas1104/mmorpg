@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\GameServer.Simulation\GameServer.Simulation.csproj" />
-    <ProjectReference Include="..\GameServer.Network\GameServer.Network.csproj" />
+    <ProjectReference Include="..\GameServer.Sim\GameServer.Sim.csproj" />
+    <ProjectReference Include="..\GameServer.Protocol\GameServer.Protocol.csproj" />
     <ProjectReference Include="..\GameServer.Server\GameServer.Server.csproj" />
   </ItemGroup>
 

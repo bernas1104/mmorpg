@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\GameServer.Network\GameServer.Network.csproj" />
+    <ProjectReference Include="..\GameServer.Protocol\GameServer.Protocol.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

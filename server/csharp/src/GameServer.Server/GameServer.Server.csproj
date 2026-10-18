@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\GameServer.Simulation\GameServer.Simulation.csproj" />
+    <ProjectReference Include="..\GameServer.Sim\GameServer.Sim.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

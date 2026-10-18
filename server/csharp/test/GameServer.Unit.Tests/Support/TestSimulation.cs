@@ -1,7 +1,8 @@
+using GameServer.Sim;
+
 namespace GameServer.Unit.Tests.Support;
 
-using GameServer.Simulation;
-using Simulation = GameServer.Simulation.Simulation;
+using Simulation = Sim.Simulation;
 
 /// <summary>
 /// Factory for a <see cref="Simulation"/> wired to a private log writer, so tests can assert on

@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GameServer.Simulation\GameServer.Simulation.csproj" />
+    <ProjectReference Include="..\..\src\GameServer.Sim\GameServer.Sim.csproj" />
     <ProjectReference Include="..\..\src\GameServer.Server\GameServer.Server.csproj" />
   </ItemGroup>
 

@@ -1,10 +1,10 @@
-using GameServer.Simulation;
+using GameServer.Sim;
 
 using GameServer.Unit.Tests.Support;
 
 namespace GameServer.Unit.Tests.Simulation;
 
-using Simulation = GameServer.Simulation.Simulation;
+using Simulation = Sim.Simulation;
 
 public sealed class LifecycleTest
 {

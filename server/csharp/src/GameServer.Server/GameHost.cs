@@ -1,11 +1,11 @@
-using GameServer.Simulation;
+using GameServer.Sim;
 
 namespace GameServer.Server;
 
-public sealed class GameHost(Ingress ingress, Simulation.Simulation simulation, string threadName)
+public sealed class GameHost(Ingress ingress, Simulation simulation, string threadName)
 {
     public Ingress Ingress { get; } = ingress;
-    private readonly Simulation.Simulation _simulation = simulation;
+    private readonly Simulation _simulation = simulation;
     private bool _advancing;
     private readonly string _threadName = threadName;
 

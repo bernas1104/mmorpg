@@ -1,4 +1,4 @@
-using GameServer.Simulation;
+using GameServer.Sim;
 
 namespace GameServer.Server;
 

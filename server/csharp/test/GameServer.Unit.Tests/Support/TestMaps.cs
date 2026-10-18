@@ -4,7 +4,7 @@ public static class TestMaps
 {
     /// <summary>
     /// A <c>width × height</c> map with a one-tile wall border and an open interior, encoded as
-    /// <c>[row = y, column = x]</c> rows for <see cref="GameServer.Simulation.Map.FromRows"/>.
+    /// <c>[row = y, column = x]</c> rows for <see cref="GameServer.Sim.Map.FromRows"/>.
     /// </summary>
     public static string[,] GetWallBoundedTiles(int width, int height)
     {

@@ -3,7 +3,7 @@
 The host shell that connects the outside world to the simulation thread. It owns the boundary,
 not the rules: it moves commands in and state out, and never re-implements a gameplay rule.
 
-This project references `GameServer.Simulation`. The reverse reference must never exist — the
+This project references `GameServer.Sim`. The reverse reference must never exist — the
 deterministic core cannot know that threads, sockets, or clocks exist. That direction is the
 ownership boundary made structural.
 
@@ -109,7 +109,7 @@ One namespace (`GameServer.Server`); folders group by domain concept for navigat
 ## Deliberately postponed
 
 - `Publish` is a stub — state projection, encoding, and session delivery come with the
-  networking milestones (`GameServer.Network` exists for this).
+  networking milestones (`GameServer.Protocol` exists for this).
 - Migrating `GameServer.Cli` onto the host shell — the CLI still paces and drives
   `Simulation` directly; the seam is proven in isolation first.
 - Transport, sessions, authentication — nothing here knows a socket exists, and it should stay
